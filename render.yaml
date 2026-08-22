@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: summit-doodles
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --timeout 60
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: SUMMIT_ADMIN_PASSWORD
+        sync: false   # set this yourself in the Render dashboard -- see DEPLOY.md
+      - key: RENDER
+        value: "true"
+    disk:
+      name: summit-doodles-data
+      mountPath: /var/data
+      sizeGB: 1

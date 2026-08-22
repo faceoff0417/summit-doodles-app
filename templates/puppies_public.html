@@ -1,0 +1,42 @@
+{% extends "public_base.html" %}
+{% block title %}Available Puppies -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="public-header" style="padding-top:0;">
+  <h1>Available Puppies</h1>
+  <p>Meet our current and upcoming litters. Ready to bring one home? <a href="{{ url_for('apply') }}">Start an application</a> -- or learn about our <a href="{{ url_for('guardian_public') }}">Home Guardian Program</a>.</p>
+</div>
+
+{% for l in litters %}
+  <div class="card" style="margin-bottom:20px; overflow:hidden;">
+    <div style="padding:16px 20px; background:linear-gradient(120deg,var(--blue-deep),var(--blue-accent)); color:#fff;">
+      <span class="pill" style="background:rgba(255,255,255,0.22); color:#fff;">{{ l['status'] }}</span>
+      <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:19px; margin-top:8px;">{{ l['litter_name'] }}</div>
+      <div style="font-size:12.5px; color:rgba(255,255,255,0.85); margin-top:2px;">
+        {{ l['breed'] }}{% if l['dob'] %} &middot; Born {{ l['dob'] | dateread }}{% else %} &middot; Expected {{ l['go_home_date'] | dateread if l['go_home_date'] else 'soon' }}{% endif %}
+      </div>
+    </div>
+    <div class="card-pad">
+      {% set pups = litter_puppies[l['id']] %}
+      {% if pups %}
+        <div class="grid-3">
+          {% for p in pups %}
+            <div class="card card-pad">
+              <div class="puppy-thumb" style="margin-bottom:10px;">
+                {% if p['photo_filename'] %}<img src="{{ url_for('uploaded_file', filename=p['photo_filename']) }}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">{% endif %}
+              </div>
+              <div style="font-weight:800; font-size:13.5px;">{{ p['name'] }}</div>
+              <div class="hint">{{ p['sex'] }} &middot; {{ p['color'] }}</div>
+              {% if p['price'] %}<div style="font-size:13px; font-weight:700; color:var(--blue-deep); margin-top:4px;">{{ p['price'] | money }}</div>{% endif %}
+              <span class="pill {{ pill_class(p['status']) }}" style="margin-top:8px;">{{ p['status'] }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:var(--muted); font-size:13px;">This litter is expecting soon -- join the waitlist by applying, and we'll be in touch as puppies become available.</p>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <div class="card card-pad" style="color:var(--muted); text-align:center;">No litters posted right now -- check back soon, or apply to join the waitlist.</div>
+{% endfor %}
+{% endblock %}

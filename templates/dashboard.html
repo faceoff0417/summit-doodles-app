@@ -1,0 +1,91 @@
+{% extends "admin_base.html" %}
+{% block title %}Dashboard -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Good morning, Tara</h1>
+    <div class="sub">Here's what's happening across the kennel today.</div>
+  </div>
+</div>
+
+<div class="grid-4" style="margin-bottom:26px;">
+  <div class="card kpi"><div class="eyebrow">Active Litters</div><div class="num" style="color:var(--purple);">{{ active_litters }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Available Puppies</div><div class="num" style="color:var(--blue-deep);">{{ available_puppies }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Open Applications</div><div class="num" style="color:var(--green);">{{ open_apps }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Deposits Held</div><div class="num" style="color:var(--blue-accent);">{{ deposits_held | money }}</div></div>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <div class="row-between">
+      <h2 style="font-size:16px;">Active &amp; Upcoming Litters</h2>
+      <a href="{{ url_for('litters_list') }}" style="font-size:12.5px; font-weight:700;">View all</a>
+    </div>
+    {% for l in litters %}
+      <a class="card card-pad" href="{{ url_for('litter_detail', litter_id=l['id']) }}" style="display:block;">
+        <div class="row-between">
+          <span class="eyebrow">Litter</span>
+          <span class="pill {{ pill_class(l['status']) }}">{{ l['status'] }}</span>
+        </div>
+        <div style="font-weight:800; font-size:15px; margin-top:6px;">{{ l['litter_name'] }}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+          {{ l['breed'] }} &middot;
+          {% if l['dob'] %}Born {{ l['dob'] | dateread }}{% else %}Waitlist: {{ l['waitlist_count'] }} families{% endif %}
+        </div>
+      </a>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted); font-size:13px;">No active litters yet.</div>
+    {% endfor %}
+  </div>
+
+  <div class="stack">
+    <div class="row-between">
+      <h2 style="font-size:16px;">Recent Applications</h2>
+      <a href="{{ url_for('applications_list') }}" style="font-size:12.5px; font-weight:700;">View all</a>
+    </div>
+    {% for a in recent_apps %}
+      <a class="card card-pad" href="{{ url_for('application_detail', app_id=a['id']) }}" style="display:flex; align-items:center; gap:12px;">
+        <div class="avatar" style="width:40px; height:40px; background:var(--purple); font-size:13px;">{{ a['last_name'][0] }}</div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:13.5px;">{{ a['first_name'] }} {{ a['last_name'] }}</div>
+          <div style="font-size:11.5px; color:var(--muted);">{{ a['city'] }}, {{ a['state'] }} &middot; {{ a['submitted_at'][:10] }}</div>
+        </div>
+        <span class="pill {{ pill_class(a['status']) }}">{{ a['status'] }}</span>
+      </a>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted); font-size:13px;">No applications yet.</div>
+    {% endfor %}
+
+    <div class="row-between" style="margin-top:10px;">
+      <h2 style="font-size:16px;">Recent Contact Messages</h2>
+      <a href="{{ url_for('contacts_list') }}" style="font-size:12.5px; font-weight:700;">View all</a>
+    </div>
+    {% for c in recent_contacts %}
+      <a class="card card-pad" href="{{ url_for('contact_detail', contact_id=c['id']) }}" style="display:block;">
+        <div class="row-between">
+          <span style="font-weight:700; font-size:13.5px;">{{ c['name'] }}</span>
+          <span class="pill {{ pill_class(c['status']) }}">{{ c['status'] }}</span>
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-top:3px;">{{ c['subject'] }}</div>
+      </a>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted); font-size:13px;">Nothing in the inbox.</div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if upcoming %}
+<div style="margin-top:26px;">
+  <h2 style="font-size:16px; margin-bottom:12px;">Upcoming Pickups</h2>
+  <div class="grid-4">
+    {% for u in upcoming %}
+      <a class="card card-pad" href="{{ url_for('reservation_detail', res_id=u['id']) }}">
+        <div class="eyebrow">{{ u['pickup_date'] | dateread }}</div>
+        <div style="font-weight:800; font-size:14px; margin-top:4px;">{{ u['puppy_name'] }}</div>
+        <div style="font-size:12px; color:var(--muted);">{{ u['buyer_name'] }}</div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

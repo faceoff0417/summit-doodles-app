@@ -1,0 +1,94 @@
+{% extends "admin_base.html" %}
+{% block title %}Breeding -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Breeding</h1><div class="sub">Heat cycles, pregnancies, pairing tool &amp; semen bank</div></div>
+  <a class="btn btn-primary" href="{{ url_for('breeding_pairing') }}">Pairing tool</a>
+</div>
+
+{% if preg %}
+<h2 style="font-size:16px; margin-bottom:10px;">Active Pregnancies</h2>
+<div class="grid-2" style="margin-bottom:24px;">
+  {% for p in preg %}
+    <a class="card card-pad" href="{{ url_for('litter_detail', litter_id=p['litter']['id']) }}">
+      <div class="row-between"><span class="eyebrow">{{ p['litter']['litter_name'] }}</span><span class="pill pill-purple">Day {{ p['day'] }} of 63</span></div>
+      <div style="height:8px; border-radius:5px; background:#F1F0F4; margin-top:10px; overflow:hidden;"><div style="width:{{ (p['day']/63*100)|round(0) }}%; height:100%; background:linear-gradient(90deg,var(--purple),var(--blue-accent));"></div></div>
+      <div style="font-size:12px; color:var(--muted); margin-top:8px;">Estimated whelp date: {{ p['due'].strftime('%b %-d, %Y') }}</div>
+    </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid-2">
+  <div class="stack">
+    <h2 style="font-size:16px;">Heat Cycles</h2>
+    {% for h in heats %}
+      <div class="card card-pad">
+        <div class="row-between"><span style="font-weight:700; font-size:13.5px;">{{ h['dog_name'] }}</span><span class="hint">{{ h['start_date'] | dateread }}</span></div>
+        {% if h['progesterone'] %}<div style="font-size:12px; color:var(--muted); margin-top:4px;">Progesterone: {{ h['progesterone'] }} ng/mL</div>{% endif %}
+        {% if h['notes'] %}<div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ h['notes'] }}</div>{% endif %}
+      </div>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">No heat cycles logged yet.</div>
+    {% endfor %}
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Log a heat cycle</div>
+      <form method="post" action="{{ url_for('heat_new') }}">
+        <div class="field"><label>Dam</label>
+          <select name="dog_id" required>{% for d in dogs %}{% if d['sex']=='Female' %}<option value="{{ d['id'] }}">{{ d['name'] }}</option>{% endif %}{% endfor %}</select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Start date</label><input type="date" name="start_date" required></div>
+          <div class="field"><label>Progesterone (ng/mL)</label><input type="number" step="0.1" name="progesterone"></div>
+        </div>
+        <div class="field"><label>Notes</label><input type="text" name="notes" placeholder="Fertile window, next draw date..."></div>
+        <button class="btn btn-secondary" type="submit">Log heat cycle</button>
+      </form>
+    </div>
+
+    <h2 style="font-size:16px; margin-top:10px;">Breeding History</h2>
+    {% for l in history %}
+      <a class="card card-pad" href="{{ url_for('litter_detail', litter_id=l['id']) }}" style="display:flex; align-items:center; gap:12px;">
+        <div style="flex:1;"><div style="font-size:13px; font-weight:700;">{{ l['litter_name'] }}</div><div class="hint">{{ l['bred_date'] | dateread if l['bred_date'] else 'Not yet bred' }}</div></div>
+        <span class="pill {{ pill_class(l['status']) }}">{{ l['status'] }}</span>
+      </a>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">No breeding history yet.</div>
+    {% endfor %}
+  </div>
+
+  <div class="stack">
+    <h2 style="font-size:16px;">Semen Bank</h2>
+    {% for s in semen %}
+      <div class="card card-pad" style="display:flex; align-items:center; gap:12px;">
+        <div class="ic" style="background:var(--purple-tint);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8"><path d="M12 2 C12 2 6 9 6 14 a6 6 0 0 0 12 0 C18 9 12 2 12 2 Z"/></svg></div>
+        <div style="flex:1;">
+          <div style="font-size:13px; font-weight:700;">{{ s['dog_name'] }} &mdash; {{ s['kind'] }}</div>
+          <div class="hint">{{ s['quantity'] }} {{ 'straw' if s['quantity']==1 else 'straws' }}{% if s['location'] %} &middot; {{ s['location'] }}{% endif %}{% if s['collected_date'] %} &middot; collected {{ s['collected_date'] | dateread }}{% endif %}</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">Nothing banked yet.</div>
+    {% endfor %}
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Log a collection</div>
+      <form method="post" action="{{ url_for('semen_new') }}">
+        <div class="field-row">
+          <div class="field"><label>Sire</label>
+            <select name="dog_id" required>{% for d in dogs %}{% if d['sex']=='Male' %}<option value="{{ d['id'] }}">{{ d['name'] }}</option>{% endif %}{% endfor %}</select>
+          </div>
+          <div class="field"><label>Type</label>
+            <select name="kind"><option>Fresh</option><option>Chilled</option><option>Frozen</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Quantity (straws)</label><input type="number" name="quantity" value="1"></div>
+          <div class="field"><label>Collected date</label><input type="date" name="collected_date"></div>
+        </div>
+        <div class="field"><label>Storage location</label><input type="text" name="location" placeholder="e.g. Tank B-14"></div>
+        <button class="btn btn-secondary" type="submit">Add to semen bank</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

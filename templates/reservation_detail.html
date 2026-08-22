@@ -1,0 +1,164 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ r['buyer_name'] }} -- Reservation{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ r['puppy_name'] }} <span style="color:var(--muted); font-weight:400; font-size:16px;">&middot; {{ r['litter_name'] }}</span></h1>
+    <div class="sub">Reserved for {{ r['buyer_name'] }}</div>
+  </div>
+</div>
+
+<div class="card card-pad" style="margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+  <div>
+    <div class="eyebrow">Private portal link for {{ r['buyer_name'] }}</div>
+    <div style="font-size:13px; margin-top:4px; word-break:break-all;"><a href="{{ url_for('portal', token=r['portal_token']) }}" target="_blank">{{ request.host_url }}portal/{{ r['portal_token'] }}</a></div>
+  </div>
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('portal', token=r['portal_token']) }}" target="_blank">Open portal &#8599;</a>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Reservation details</div>
+      <form method="post" action="{{ url_for('reservation_update', res_id=r['id']) }}">
+        <div class="field-row">
+          <div class="field"><label>Total price</label><input type="number" step="1" name="total_price" value="{{ r['total_price'] }}"></div>
+          <div class="field"><label>Deposit paid</label><input type="number" step="1" name="deposit_paid" value="{{ r['deposit_paid'] }}"></div>
+        </div>
+        <div class="field"><label>Pickup date</label><input type="date" name="pickup_date" value="{{ r['pickup_date'] or '' }}"></div>
+        <div class="field"><label>Pickup notes</label><textarea name="pickup_notes">{{ r['pickup_notes'] or '' }}</textarea></div>
+        <div class="checkbox-group" style="margin-bottom:18px;">
+          <label class="checkbox-item"><input type="checkbox" name="contract_signed" {{ 'checked' if r['contract_signed'] }}>Contract signed</label>
+          <label class="checkbox-item"><input type="checkbox" name="health_guarantee_ready" {{ 'checked' if r['health_guarantee_ready'] }}>Health guarantee ready</label>
+        </div>
+
+        <div class="eyebrow" style="margin:20px 0 12px; padding-top:16px; border-top:1px solid var(--line);">Go-Home Binder</div>
+        <div class="field"><label>Feeding schedule</label><textarea name="feeding_schedule" placeholder="Current food, amounts &amp; times...">{{ r['feeding_schedule'] or '' }}</textarea></div>
+        <div class="field"><label>Training &amp; socialization notes</label><textarea name="training_notes" placeholder="Potty routine, crate progress, cues learned...">{{ r['training_notes'] or '' }}</textarea></div>
+        <div class="field"><label>Registration status</label>
+          <select name="registration_status">
+            {% for s in ['Pending','Submitted','Complete'] %}<option value="{{ s }}" {{ 'selected' if r['registration_status']==s }}>{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </form>
+      {% if not r['go_home_sent'] %}
+        <form method="post" action="{{ url_for('reservation_go_home_send', res_id=r['id']) }}" style="margin-top:10px;">
+          <button class="btn btn-green btn-block" type="submit">Send go-home binder to family</button>
+        </form>
+      {% else %}
+        <div class="pill pill-green" style="margin-top:10px;">Binder sent to family</div>
+      {% endif %}
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Buyer contact</div>
+      <table>
+        <tr><td>Email</td><td><a href="mailto:{{ r['buyer_email'] }}">{{ r['buyer_email'] }}</a></td></tr>
+        <tr><td>Phone</td><td>{{ r['buyer_phone'] or '--' }}</td></tr>
+      </table>
+      {% if r['buyer_signature'] %}
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
+          <div class="eyebrow">Purchase agreement e-signature</div>
+          <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:15px; margin-top:4px;">{{ r['buyer_signature'] }}</div>
+          <div class="hint">Signed {{ r['buyer_signature_date'] | dateread }}</div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if lifetime %}
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:8px;">Lifetime Profile</div>
+      <div style="font-size:13px;">{{ lifetime['age'] }} &middot; next birthday {{ lifetime['next_birthday'].strftime('%b %-d') }}</div>
+    </div>
+    {% endif %}
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Invoices</div>
+      {% for inv in invoices %}
+        <div class="row-between" style="margin-bottom:10px;">
+          <div><div style="font-size:12.5px; font-weight:700;">{{ inv['description'] }}</div><div class="hint">{{ inv['amount'] | money }}{% if inv['due_date'] %} &middot; due {{ inv['due_date'] | dateread }}{% endif %}</div></div>
+          {% if inv['status'] == 'Paid' %}
+            <span class="pill pill-green">Paid</span>
+          {% else %}
+            <form method="post" action="{{ url_for('invoice_mark_paid', invoice_id=inv['id']) }}"><button class="btn btn-secondary btn-sm" type="submit">Mark paid</button></form>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="hint" style="margin-bottom:10px;">No invoices yet.</div>
+      {% endfor %}
+      <form method="post" action="{{ url_for('invoice_new', res_id=r['id']) }}" style="margin-top:6px;">
+        <div class="field-row">
+          <div class="field"><label>Description</label><input type="text" name="description" required></div>
+          <div class="field"><label>Amount</label><input type="number" step="0.01" name="amount" required></div>
+        </div>
+        <div class="field"><label>Due date</label><input type="date" name="due_date"></div>
+        <button class="btn btn-secondary btn-sm" type="submit">Add invoice</button>
+      </form>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Notes &amp; Tasks</div>
+      {% for n in notes %}
+        <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; {% if n['done'] %}opacity:0.55;{% endif %}">
+          <form method="post" action="{{ url_for('note_toggle', note_id=n['id']) }}">
+            <button type="submit" style="width:18px; height:18px; border-radius:5px; border:1.5px solid var(--line); background:{{ 'var(--green)' if n['done'] else '#fff' }}; cursor:pointer; margin-top:2px;"></button>
+          </form>
+          <div style="flex:1;">
+            <div style="font-size:12.5px; {% if n['done'] %}text-decoration:line-through;{% endif %}">{{ n['body'] }}</div>
+            {% if n['due_date'] %}<div class="hint">Due {{ n['due_date'] | dateread }}</div>{% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="hint" style="margin-bottom:10px;">No notes yet.</div>
+      {% endfor %}
+      <form method="post" action="{{ url_for('note_new') }}">
+        <input type="hidden" name="entity_type" value="reservation">
+        <input type="hidden" name="entity_id" value="{{ r['id'] }}">
+        <div class="field"><textarea name="body" placeholder="Add a note or task..." required style="min-height:60px;"></textarea></div>
+        <div class="field"><input type="date" name="due_date"></div>
+        <button class="btn btn-secondary btn-sm" type="submit">Add note</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Post a growth update</div>
+      <form method="post" action="{{ url_for('reservation_update_new', res_id=r['id']) }}" enctype="multipart/form-data">
+        <div class="field"><textarea name="body" placeholder="e.g. Started eating solid food today!" required></textarea></div>
+        <div class="field"><input type="file" name="photo" accept="image/*"></div>
+        <button class="btn btn-secondary" type="submit">Post to their portal</button>
+      </form>
+      {% if updates %}
+      <div class="stack" style="margin-top:16px;">
+        {% for u in updates %}
+        <div style="border-top:1px solid var(--line); padding-top:10px;">
+          <div style="font-size:12.5px;">{{ u['body'] }}</div>
+          <div class="hint">{{ u['created_at'][:16] }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Messages</div>
+      <div class="stack" style="max-height:280px; overflow-y:auto; margin-bottom:14px;">
+        {% for m in messages %}
+        <div style="align-self:{{ 'flex-end' if m['sender']=='breeder' else 'flex-start' }}; max-width:85%; {{ 'margin-left:auto;' if m['sender']=='breeder' }}">
+          <div style="background:{{ 'var(--purple-tint)' if m['sender']=='breeder' else '#F1F0F4' }}; padding:9px 12px; border-radius:12px; font-size:12.5px;">{{ m['body'] }}</div>
+          <div class="hint" style="text-align:{{ 'right' if m['sender']=='breeder' else 'left' }};">{{ m['sender'] }} &middot; {{ m['created_at'][11:16] }}</div>
+        </div>
+        {% else %}
+        <div class="hint">No messages yet.</div>
+        {% endfor %}
+      </div>
+      <form method="post" action="{{ url_for('reservation_message_new', res_id=r['id']) }}" style="display:flex; gap:8px;">
+        <input type="text" name="body" placeholder="Reply to the family..." required style="flex:1;">
+        <button class="btn btn-primary btn-sm" type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

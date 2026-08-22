@@ -1,0 +1,93 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ dog['name'] }} -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ dog['name'] }}</h1>
+    <div class="sub">{{ dog['breed'] }} &middot; {{ dog['role'] }}{% if dog['dob'] %} &middot; {{ dog['dob'] | age }}{% endif %}</div>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a class="btn btn-secondary" href="{{ url_for('dog_edit', dog_id=dog['id']) }}">Edit</a>
+    <form method="post" action="{{ url_for('dog_delete', dog_id=dog['id']) }}" onsubmit="return confirm('Remove {{ dog['name'] }}? This can\'t be undone.');">
+      <button class="btn btn-secondary" type="submit" style="color:var(--red);">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <div class="card card-pad" style="display:flex; gap:16px; align-items:center;">
+      <div class="avatar" style="width:76px; height:76px; font-size:26px; background:var(--purple); flex-shrink:0;">
+        {% if dog['photo_filename'] %}<img src="{{ url_for('uploaded_file', filename=dog['photo_filename']) }}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;">{% else %}{{ dog['name'][0] }}{% endif %}
+      </div>
+      <div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="pill pill-purple">{{ dog['color'] }}</span>
+          <span class="pill pill-blue">{{ dog['weight_lbs'] }} lbs</span>
+        </div>
+        {% if dog['bio'] %}<p style="font-size:13px; font-style:italic; color:var(--muted); margin-top:8px; line-height:1.5;">&ldquo;{{ dog['bio'] }}&rdquo;</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Registration</div>
+      <div class="grid-2">
+        <div><div class="hint" style="margin:0;">AKC / Registry #</div><div style="font-weight:700;">{{ dog['akc_number'] or '--' }}</div></div>
+        <div><div class="hint" style="margin:0;">Microchip #</div><div style="font-weight:700;">{{ dog['microchip'] or '--' }}</div></div>
+        <div><div class="hint" style="margin:0;">Sire</div><div style="font-weight:700;">{{ dog['sire_name'] or '--' }}</div></div>
+        <div><div class="hint" style="margin:0;">Dam</div><div style="font-weight:700;">{{ dog['dam_name'] or '--' }}</div></div>
+      </div>
+      {% if dog['role']=='Guardian Home' and dog['guardian_family'] %}
+        <div style="margin-top:12px;"><div class="hint" style="margin:0;">Guardian family</div><div style="font-weight:700;">{{ dog['guardian_family'] }}</div></div>
+      {% endif %}
+    </div>
+
+    {% if litters %}
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Litters produced</div>
+      <div class="stack">
+        {% for l in litters %}
+          <a href="{{ url_for('litter_detail', litter_id=l['id']) }}" class="row-between">
+            <span style="font-weight:700; font-size:13px;">{{ l['litter_name'] }}</span>
+            <span class="pill {{ pill_class(l['status']) }}">{{ l['status'] }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="stack">
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Health testing</div>
+      <table>
+        <tr><td>Hips</td><td><span class="pill {{ 'pill-green' if dog['hips']=='Good' or dog['hips']=='Excellent' else 'pill-amber' }}">{{ dog['hips'] or 'Not on file' }}</span></td></tr>
+        <tr><td>Elbows</td><td><span class="pill {{ 'pill-green' if dog['elbows']=='Normal' else 'pill-amber' }}">{{ dog['elbows'] or 'Not on file' }}</span></td></tr>
+        <tr><td>EIC</td><td><span class="pill {{ 'pill-green' if dog['eic']=='Clear' else 'pill-amber' }}">{{ dog['eic'] or 'Not on file' }}</span></td></tr>
+        <tr><td>DM</td><td><span class="pill {{ 'pill-green' if dog['dm']=='Clear' else 'pill-amber' }}">{{ dog['dm'] or 'Not on file' }}</span></td></tr>
+        <tr><td>vWD</td><td><span class="pill {{ 'pill-green' if dog['vwd']=='Clear' else 'pill-amber' }}">{{ dog['vwd'] or 'Not on file' }}</span></td></tr>
+        <tr><td>PRA</td><td><span class="pill {{ 'pill-green' if dog['pra']=='Clear' else 'pill-amber' }}">{{ dog['pra'] or 'Not on file' }}</span></td></tr>
+      </table>
+    </div>
+
+    <div class="card card-pad">
+      <div class="row-between" style="margin-bottom:10px;">
+        <div class="eyebrow" style="margin:0;">Weight history</div>
+      </div>
+      {% if weights %}
+      <table>
+        <tr><th>Date</th><th>Weight</th></tr>
+        {% for w in weights %}<tr><td>{{ w['log_date'] | dateread }}</td><td>{{ w['weight_lbs'] }} lbs</td></tr>{% endfor %}
+      </table>
+      {% else %}
+      <div class="hint">No weight entries yet.</div>
+      {% endif %}
+      <form method="post" action="{{ url_for('dog_weight_add', dog_id=dog['id']) }}" style="display:flex; gap:10px; margin-top:14px; align-items:flex-end;">
+        <div class="field" style="flex:1; margin:0;"><label>Date</label><input type="date" name="log_date" required></div>
+        <div class="field" style="flex:1; margin:0;"><label>Weight (lbs)</label><input type="number" step="0.1" name="weight_lbs" required></div>
+        <button class="btn btn-secondary btn-sm" type="submit">Log</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

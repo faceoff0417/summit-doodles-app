@@ -1,0 +1,114 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ a['first_name'] }} {{ a['last_name'] }} -- Application{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ a['first_name'] }} {{ a['last_name'] }}</h1>
+    <div class="sub">Applied {{ a['submitted_at'][:10] }} &middot; <span class="pill {{ pill_class(a['status']) }}">{{ a['status'] }}</span></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Contact</div>
+      <table>
+        <tr><td>Email</td><td><a href="mailto:{{ a['email'] }}">{{ a['email'] }}</a></td></tr>
+        <tr><td>Phone</td><td>{{ a['phone'] }}</td></tr>
+        <tr><td>Preferred contact</td><td>{{ a['preferred_contact'] or '--' }}</td></tr>
+        <tr><td>Address</td><td>{{ a['address_line1'] or '' }} {{ a['address_line2'] or '' }}<br>{{ a['city'] }}, {{ a['state'] }} {{ a['zip'] }}</td></tr>
+        <tr><td>How they heard about us</td><td>{{ a['how_heard'] or '--' }}</td></tr>
+        <tr><td>Referral source</td><td>{{ a['referral_source'] or '--' }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Timeline &amp; household</div>
+      <table>
+        <tr><td>Timeframe</td><td>{{ a['timeframe'] or '--' }}</td></tr>
+        <tr><td>Current dogs</td><td>{{ a['current_dogs'] or '--' }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Puppy preference</div>
+      <table>
+        <tr><td>Choice #1</td><td>{{ a['puppy_choice_1'] or '--' }}</td></tr>
+        <tr><td>Choice #2</td><td>{{ a['puppy_choice_2'] or '--' }}</td></tr>
+        <tr><td>Choice #3</td><td>{{ a['puppy_choice_3'] or '--' }}</td></tr>
+        <tr><td>Gender preference</td><td>{{ a['gender_preference'] or '--' }}</td></tr>
+        <tr><td>Notify of future litters</td><td>{{ 'Yes' if a['notify_future_litters'] else 'No' }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Delivery &amp; training</div>
+      <table>
+        <tr><td>Delivery</td><td>{{ a['delivery_pref'] or '--' }}</td></tr>
+        <tr><td>Training interest</td><td>{{ a['training_interest'] or '--' }}</td></tr>
+        <tr><td>Training package</td><td>{{ a['training_package'] or '--' }}</td></tr>
+      </table>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:10px;">Contract &amp; signature</div>
+      <table>
+        <tr><td>Agreed to terms</td><td>{{ 'Yes' if a['contract_agree'] else 'No' }}</td></tr>
+        <tr><td>Signature</td><td style="font-family:'Playfair Display',serif; font-style:italic;">{{ a['signature_text'] or '--' }}</td></tr>
+        <tr><td>Date</td><td>{{ a['signature_date'] or '--' }}</td></tr>
+      </table>
+      {% if a['comments'] %}<div style="margin-top:12px; font-size:13px; color:var(--muted);"><span class="eyebrow">Comments</span><p style="margin-top:4px;">{{ a['comments'] }}</p></div>{% endif %}
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Screening status</div>
+      <form method="post">
+        <div class="field">
+          <label>Status</label>
+          <select name="status">
+            {% for s in ['New','Screening','Approved','Waitlisted','Declined'] %}
+            <option value="{{ s }}" {{ 'selected' if a['status']==s }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Star rating</label>
+          <select name="star_rating">
+            {% for i in range(6) %}<option value="{{ i }}" {{ 'selected' if a['star_rating']==i }}>{{ i }} star{{ 's' if i != 1 }}</option>{% endfor %}
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Update</button>
+      </form>
+    </div>
+    <div class="card card-pad">
+      <a class="btn btn-secondary btn-block" href="{{ url_for('reservation_new') }}">Create a reservation for this family</a>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Notes &amp; Tasks</div>
+      {% for n in notes %}
+        <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; {% if n['done'] %}opacity:0.55;{% endif %}">
+          <form method="post" action="{{ url_for('note_toggle', note_id=n['id']) }}">
+            <button type="submit" style="width:18px; height:18px; border-radius:5px; border:1.5px solid var(--line); background:{{ 'var(--green)' if n['done'] else '#fff' }}; cursor:pointer; margin-top:2px;"></button>
+          </form>
+          <div style="flex:1;">
+            <div style="font-size:12.5px; {% if n['done'] %}text-decoration:line-through;{% endif %}">{{ n['body'] }}</div>
+            {% if n['due_date'] %}<div class="hint">Due {{ n['due_date'] | dateread }}</div>{% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="hint" style="margin-bottom:10px;">No notes yet.</div>
+      {% endfor %}
+      <form method="post" action="{{ url_for('note_new') }}">
+        <input type="hidden" name="entity_type" value="application">
+        <input type="hidden" name="entity_id" value="{{ a['id'] }}">
+        <div class="field"><textarea name="body" placeholder="Add a note or task..." required style="min-height:60px;"></textarea></div>
+        <div class="field"><input type="date" name="due_date"></div>
+        <button class="btn btn-secondary btn-sm" type="submit">Add note</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

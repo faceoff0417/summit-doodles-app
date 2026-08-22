@@ -1,0 +1,106 @@
+{% extends "public_base.html" %}
+{% block title %}Home Guardian Program -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="public-header" style="padding-top:0;">
+  <h1>Home Guardian Program</h1>
+  <p>A Guardian family raises one of our puppies as their own -- inside, loved, and part of the family -- at a significant discount, in exchange for including your dog in our breeding program.</p>
+</div>
+
+<div class="card card-pad" style="margin-bottom:20px;">
+  <p style="font-size:13.5px; line-height:1.7; color:var(--ink);">
+    We believe puppies and dogs should be <strong>inside</strong>, in a loving home -- not kenneled. Guardian
+    families receive a puppy at a significantly discounted price. That discount is fully refundable once the
+    program is complete and every term has been met.
+  </p>
+</div>
+
+<h2 style="font-size:18px; margin-bottom:12px;">How It Works</h2>
+<div class="grid-2" style="margin-bottom:24px;">
+  <div class="card card-pad">
+    <div class="eyebrow" style="margin-bottom:8px;">Female Guardians</div>
+    <p style="font-size:13px; line-height:1.6; color:var(--muted);">
+      She lives with you full time. When she's ready to be bred, she comes to us, stays through her pregnancy
+      and the 6&ndash;7 week whelping/weaning period, then goes right back home to you. She retires from
+      breeding between ages 4&ndash;6, is spayed, and stays with your family permanently.
+    </p>
+  </div>
+  <div class="card card-pad">
+    <div class="eyebrow" style="margin-bottom:8px;">Male Guardians</div>
+    <p style="font-size:13px; line-height:1.6; color:var(--muted);">
+      He lives with you full time. When he's needed for breeding, he visits us for just 7&ndash;10 days. He
+      retires between ages 4&ndash;6, is neutered, and stays with your family permanently.
+    </p>
+  </div>
+</div>
+
+<h2 style="font-size:18px; margin-bottom:12px;">What's Covered</h2>
+<div class="grid-2" style="margin-bottom:24px;">
+  <div class="card card-pad">
+    <div class="eyebrow" style="margin-bottom:8px; color:var(--purple);">We Cover</div>
+    <ul style="margin:0; padding-left:18px; font-size:13px; line-height:1.9; color:var(--ink);">
+      <li>Annual vet exams</li>
+      <li>Vaccines</li>
+      <li>Vitamins</li>
+      <li>Reproductive medical care</li>
+    </ul>
+  </div>
+  <div class="card card-pad">
+    <div class="eyebrow" style="margin-bottom:8px; color:var(--blue-accent);">Your Family Covers</div>
+    <ul style="margin:0; padding-left:18px; font-size:13px; line-height:1.9; color:var(--ink);">
+      <li>Approved food</li>
+      <li>Toys</li>
+      <li>Professional grooming (every 8 weeks, minimum)</li>
+      <li>Monthly flea/tick prevention</li>
+      <li>Non-breeding medical care</li>
+    </ul>
+  </div>
+</div>
+
+<h2 style="font-size:18px; margin-bottom:12px;">Requirements</h2>
+<div class="card card-pad" style="margin-bottom:24px;">
+  <div style="display:flex; flex-direction:column; gap:12px;">
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+      <span style="font-size:13px; color:var(--ink);">Live within 60 miles of Colorado Springs, CO, with no plans to relocate for at least 5 years</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+      <span style="font-size:13px; color:var(--ink);">Maintain regular professional grooming</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+      <span style="font-size:13px; color:var(--ink);">Allow 24&ndash;48 hours' notice for pickups for photos, vet visits, and checkups</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+      <span style="font-size:13px; color:var(--ink);">Notify us of any changes to your living situation, and of vacations</span>
+    </div>
+  </div>
+</div>
+
+{% if guardians %}
+<h2 style="font-size:18px; margin-bottom:12px;">Meet Our Guardian Families</h2>
+<div class="grid-3" style="margin-bottom:24px;">
+  {% for g in guardians %}
+    <div class="card card-pad" style="text-align:center;">
+      <div style="width:100%; aspect-ratio:1; border-radius:14px; overflow:hidden; background:var(--purple-tint); margin-bottom:12px;">
+        {% if g['photo_filename'] %}
+          <img src="{{ url_for('uploaded_file', filename=g['photo_filename']) }}" style="width:100%; height:100%; object-fit:cover;">
+        {% endif %}
+      </div>
+      <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:16px;">{{ g['name'] }}</div>
+      <div class="hint" style="margin-top:2px;">{{ g['breed'] }}</div>
+      {% if g['guardian_family'] %}<div style="font-size:12.5px; color:var(--purple); font-weight:700; margin-top:6px;">With the {{ g['guardian_family'] }}</div>{% endif %}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card card-pad" style="text-align:center; padding:36px 24px; background:linear-gradient(135deg,var(--blue-deep),var(--purple)); border:none;">
+  <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:20px; color:#fff;">Interested in becoming a Guardian family?</div>
+  <p style="font-size:13px; color:rgba(255,255,255,0.85); margin-top:8px; max-width:44ch; margin-left:auto; margin-right:auto;">
+    Reach out and tell us a bit about your home -- we'll let you know when a Guardian placement opens up.
+  </p>
+  <a class="btn" href="{{ url_for('contact') }}" style="background:#fff; color:var(--blue-deep); margin-top:18px; display:inline-flex;">Contact Us</a>
+</div>
+{% endblock %}

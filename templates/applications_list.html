@@ -1,0 +1,33 @@
+{% extends "admin_base.html" %}
+{% block title %}Applications -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Applications</h1><div class="sub">{{ applications | length }} total &middot; from the public puppy application form</div></div>
+  <a class="btn btn-secondary" href="{{ url_for('apply') }}" target="_blank" rel="noopener">View public form &#8599;</a>
+</div>
+
+<div style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
+  <a class="pill {{ 'pill-purple' if not filter_status else 'pill-gray' }}" href="{{ url_for('applications_list') }}">All</a>
+  {% for s in ['New','Screening','Approved','Waitlisted','Declined'] %}
+    <a class="pill {{ 'pill-purple' if filter_status==s else 'pill-gray' }}" href="{{ url_for('applications_list', status=s) }}">{{ s }}</a>
+  {% endfor %}
+</div>
+
+<div class="stack">
+  {% for a in applications %}
+    <a class="card card-pad" href="{{ url_for('application_detail', app_id=a['id']) }}" style="display:flex; align-items:center; gap:14px;">
+      <div class="avatar" style="width:44px; height:44px; font-size:14px; background:{{ ['#0054AA','#6B429C','#00AB8E','#1E73BE'][a['id'] % 4] }};">{{ a['last_name'][0] }}</div>
+      <div style="flex:1;">
+        <div class="row-between">
+          <span style="font-weight:800; font-size:14px;">{{ a['first_name'] }} {{ a['last_name'] }}</span>
+          <span class="stars" style="color:#F5B301; font-size:12px;">{% for i in range(5) %}{{ '★' if i < a['star_rating'] else '☆' }}{% endfor %}</span>
+        </div>
+        <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">{{ a['city'] }}, {{ a['state'] }} &middot; Applied {{ a['submitted_at'][:10] }} &middot; {{ a['timeframe'] }}</div>
+      </div>
+      <span class="pill {{ pill_class(a['status']) }}">{{ a['status'] }}</span>
+    </a>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">No applications match this filter.</div>
+  {% endfor %}
+</div>
+{% endblock %}

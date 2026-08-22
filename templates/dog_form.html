@@ -1,0 +1,90 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ 'Edit ' ~ dog['name'] if dog else 'Add a dog' }} -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ 'Edit ' ~ dog['name'] if dog else 'Add a dog' }}</h1></div>
+
+<form method="post" enctype="multipart/form-data" class="card card-pad" style="max-width:720px;">
+  <fieldset>
+    <legend>Basics</legend>
+    <div class="field-row">
+      <div class="field"><label>Name</label><input type="text" name="name" required value="{{ dog['name'] if dog else '' }}"></div>
+      <div class="field"><label>Sex</label>
+        <select name="sex">
+          <option value="Male" {{ 'selected' if dog and dog['sex']=='Male' }}>Male</option>
+          <option value="Female" {{ 'selected' if dog and dog['sex']=='Female' }}>Female</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Role</label>
+        <select name="role">
+          {% for r in ['Stud','Dam','Guardian Home','Retired'] %}
+          <option value="{{ r }}" {{ 'selected' if dog and dog['role']==r }}>{{ r }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field"><label>Breed</label><input type="text" name="breed" value="{{ dog['breed'] if dog else '' }}" placeholder="Australian Bernedoodle"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Color</label><input type="text" name="color" value="{{ dog['color'] if dog else '' }}"></div>
+      <div class="field"><label>Coat</label><input type="text" name="coat" value="{{ dog['coat'] if dog else '' }}" placeholder="Fully Furnished, Wavy"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date of birth</label><input type="date" name="dob" value="{{ dog['dob'] if dog else '' }}"></div>
+      <div class="field"><label>Current weight (lbs)</label><input type="number" step="0.1" name="weight_lbs" value="{{ dog['weight_lbs'] if dog else '' }}"></div>
+    </div>
+    {% if dog %}
+    <div class="field"><label>Photo</label><input type="file" name="photo" accept="image/*"></div>
+    {% endif %}
+  </fieldset>
+
+  <fieldset>
+    <legend>Registration</legend>
+    <div class="field-row">
+      <div class="field"><label>AKC / registry #</label><input type="text" name="akc_number" value="{{ dog['akc_number'] if dog else '' }}"></div>
+      <div class="field"><label>Microchip #</label><input type="text" name="microchip" value="{{ dog['microchip'] if dog else '' }}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Sire</label><input type="text" name="sire_name" value="{{ dog['sire_name'] if dog else '' }}"></div>
+      <div class="field"><label>Dam</label><input type="text" name="dam_name" value="{{ dog['dam_name'] if dog else '' }}"></div>
+    </div>
+    {% if dog and dog['role']=='Guardian Home' %}
+    <div class="field"><label>Guardian family</label><input type="text" name="guardian_family" value="{{ dog['guardian_family'] or '' }}"></div>
+    {% endif %}
+  </fieldset>
+
+  <fieldset>
+    <legend>Health testing</legend>
+    <div class="field-row">
+      <div class="field"><label>Hips (OFA)</label><input type="text" name="hips" value="{{ dog['hips'] if dog else '' }}" placeholder="Good"></div>
+      <div class="field"><label>Elbows (OFA)</label><input type="text" name="elbows" value="{{ dog['elbows'] if dog else '' }}" placeholder="Normal"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>EIC</label>
+        <select name="eic"><option value="">--</option>{% for v in ['Clear','Carrier','Affected'] %}<option {{ 'selected' if dog and dog['eic']==v }}>{{ v }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>DM</label>
+        <select name="dm"><option value="">--</option>{% for v in ['Clear','Carrier','Affected'] %}<option {{ 'selected' if dog and dog['dm']==v }}>{{ v }}</option>{% endfor %}</select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>vWD</label>
+        <select name="vwd"><option value="">--</option>{% for v in ['Clear','Carrier','Affected'] %}<option {{ 'selected' if dog and dog['vwd']==v }}>{{ v }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>PRA</label>
+        <select name="pra"><option value="">--</option>{% for v in ['Clear','Carrier','Affected'] %}<option {{ 'selected' if dog and dog['pra']==v }}>{{ v }}</option>{% endfor %}</select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Bio</legend>
+    <div class="field"><textarea name="bio" placeholder="Personality, story, what makes this dog special...">{{ dog['bio'] if dog else '' }}</textarea></div>
+  </fieldset>
+
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if dog else 'Add dog' }}</button>
+    <a class="btn btn-secondary" href="{{ url_for('dog_detail', dog_id=dog['id']) if dog else url_for('dogs_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

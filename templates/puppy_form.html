@@ -1,0 +1,52 @@
+{% extends "admin_base.html" %}
+{% block title %}Edit {{ puppy['name'] }} -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Edit {{ puppy['name'] }}</h1></div>
+
+<form method="post" enctype="multipart/form-data" class="card card-pad" style="max-width:640px;">
+  <div class="field-row">
+    <div class="field"><label>Name</label><input type="text" name="name" required value="{{ puppy['name'] }}"></div>
+    <div class="field"><label>Sex</label>
+      <select name="sex">
+        <option value="Male" {{ 'selected' if puppy['sex']=='Male' }}>Male</option>
+        <option value="Female" {{ 'selected' if puppy['sex']=='Female' }}>Female</option>
+      </select>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Color</label><input type="text" name="color" value="{{ puppy['color'] or '' }}"></div>
+    <div class="field"><label>Status</label>
+      <select name="status">
+        {% for s in ['Available','On Hold','Reserved','Sold'] %}
+        <option value="{{ s }}" {{ 'selected' if puppy['status']==s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Birth weight (oz)</label><input type="number" step="0.1" name="birth_weight_oz" value="{{ puppy['birth_weight_oz'] or '' }}"></div>
+    <div class="field"><label>Current weight (lbs)</label><input type="number" step="0.1" name="current_weight_lbs" value="{{ puppy['current_weight_lbs'] or '' }}"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Price</label><input type="number" step="1" name="price" value="{{ puppy['price'] or '' }}"></div>
+    <div class="field"><label>Microchip #</label><input type="text" name="microchip" value="{{ puppy['microchip'] or '' }}"></div>
+  </div>
+  <div class="field"><label>AKC / registry #</label><input type="text" name="akc_number" value="{{ puppy['akc_number'] or '' }}"></div>
+  <div class="field"><label>Photo</label><input type="file" name="photo" accept="image/*"></div>
+  <div class="field"><label>Notes</label><textarea name="notes">{{ puppy['notes'] or '' }}</textarea></div>
+
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-primary" type="submit">Save changes</button>
+    <a class="btn btn-secondary" href="{{ url_for('litter_detail', litter_id=puppy['litter_id']) }}">Cancel</a>
+  </div>
+</form>
+
+<div class="card card-pad" style="max-width:640px; margin-top:20px;">
+  <div class="eyebrow" style="margin-bottom:12px;">Log a weight</div>
+  <form method="post" action="{{ url_for('puppy_weight_add', puppy_id=puppy['id']) }}" style="display:flex; gap:10px; align-items:flex-end;">
+    <div class="field" style="flex:1; margin:0;"><label>Date</label><input type="date" name="log_date" required></div>
+    <div class="field" style="flex:1; margin:0;"><label>Weight (lbs)</label><input type="number" step="0.1" name="weight_lbs" required></div>
+    <button class="btn btn-secondary btn-sm" type="submit">Log</button>
+  </form>
+</div>
+{% endblock %}

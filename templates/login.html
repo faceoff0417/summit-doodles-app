@@ -1,0 +1,15 @@
+{% extends "public_base.html" %}
+{% block title %}Sign in -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="card card-pad" style="max-width:380px; margin:20px auto 0;">
+  <h1 style="font-size:20px; margin-bottom:4px;">Breeder sign in</h1>
+  <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Dashboard, dogs, litters, applications &amp; reservations.</p>
+  <form method="post">
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autofocus required>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+  </form>
+</div>
+{% endblock %}

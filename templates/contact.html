@@ -1,0 +1,28 @@
+{% extends "public_base.html" %}
+{% block title %}Contact Us -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="public-header" style="padding-top:0;">
+  <h1>Contact Us</h1>
+  <p>Questions about a litter, the Guardian Program, or anything else -- we'd love to hear from you.</p>
+</div>
+<form method="post" class="card card-pad">
+  <div class="field-row">
+    <div class="field"><label>Name</label><input type="text" name="name" required></div>
+    <div class="field"><label>Email</label><input type="email" name="email" required></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Phone number</label><input type="tel" name="phone" required></div>
+    <div class="field"><label>City and state where you live?</label><input type="text" name="city_state" required></div>
+  </div>
+  <div class="field"><label>Subject</label><input type="text" name="subject" required></div>
+  <div class="field">
+    <label>How did you hear about us?</label>
+    <select name="how_heard" required>
+      <option value="">Select...</option>
+      {% for h in ['Google search or ad','Facebook or Instagram','Nextdoor','Referral','Other'] %}<option>{{ h }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field"><label>Message <span style="font-weight:400;">(optional)</span></label><textarea name="message"></textarea></div>
+  <button class="btn btn-primary btn-block" type="submit">Send message</button>
+</form>
+{% endblock %}

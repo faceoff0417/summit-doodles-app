@@ -1,0 +1,118 @@
+{% extends "public_base.html" %}
+{% block title %}{{ r['puppy_name'] }}'s Puppy Portal -- Summit Doodles{% endblock %}
+{% block content %}
+
+<div class="card" style="overflow:hidden; margin-bottom:20px; background:linear-gradient(150deg,#0054AA,#6B429C); border:none; padding:26px 24px; color:#fff;">
+  <div style="font-size:12px; color:rgba(255,255,255,0.8); font-weight:700; letter-spacing:0.04em;">WELCOME HOME, {{ r['puppy_name'].upper() }}</div>
+  {% if days_left is not none %}
+    {% if days_left > 0 %}
+      <div style="display:flex; align-items:baseline; gap:8px; margin-top:6px;">
+        <span style="font-family:'Playfair Display',serif; font-weight:700; font-size:44px;">{{ days_left }}</span>
+        <span style="font-size:14px; font-weight:600;">day{{ 's' if days_left != 1 }} until pickup</span>
+      </div>
+    {% elif days_left == 0 %}
+      <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:28px; margin-top:8px;">Today's the day! &#127881;</div>
+    {% else %}
+      <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:22px; margin-top:8px;">Welcome home!</div>
+    {% endif %}
+    <div style="font-size:12.5px; color:rgba(255,255,255,0.85); margin-top:6px;">{{ r['pickup_date'] | dateread }} &middot; Colorado Springs</div>
+  {% else %}
+    <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:22px; margin-top:8px;">Pickup date coming soon</div>
+  {% endif %}
+</div>
+
+<div class="card card-pad" style="display:flex; gap:14px; align-items:center; margin-bottom:20px;">
+  <div class="puppy-thumb" style="width:64px; height:64px; flex-shrink:0; border-radius:16px; overflow:hidden;">
+    {% if r['puppy_photo'] %}<img src="{{ url_for('uploaded_file', filename=r['puppy_photo']) }}" style="width:100%;height:100%;object-fit:cover;">{% endif %}
+  </div>
+  <div>
+    <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:18px;">{{ r['puppy_name'] }}</div>
+    <div style="font-size:12px; color:var(--muted);">{{ r['sex'] }} &middot; {{ r['color'] }} &middot; {{ r['litter_name'] }}</div>
+    {% if r['current_weight_lbs'] %}<div style="font-size:12px; color:var(--green); font-weight:700; margin-top:3px;">{{ r['current_weight_lbs'] }} lbs</div>{% endif %}
+  </div>
+</div>
+
+<h2 style="font-size:16px; margin-bottom:10px;">Photos &amp; Growth Updates</h2>
+<div class="stack" style="margin-bottom:24px;">
+  {% for u in updates %}
+    <div class="card card-pad">
+      {% if u['photo_filename'] %}<div style="width:100%; border-radius:12px; overflow:hidden; margin-bottom:10px;"><img src="{{ url_for('uploaded_file', filename=u['photo_filename']) }}" style="width:100%; display:block;"></div>{% endif %}
+      <div style="font-size:13px;">{{ u['body'] }}</div>
+      <div class="hint">{{ u['created_at'][:10] }}</div>
+    </div>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted); font-size:13px;">No updates yet -- check back soon!</div>
+  {% endfor %}
+</div>
+
+<h2 style="font-size:16px; margin-bottom:10px;">Payment Status</h2>
+<div class="card card-pad" style="margin-bottom:24px;">
+  <div style="display:flex; justify-content:space-between; text-align:center; gap:10px;">
+    <div><div class="eyebrow">Total</div><div style="font-size:16px; font-weight:800;">{{ r['total_price'] | money }}</div></div>
+    <div><div class="eyebrow">Paid</div><div style="font-size:16px; font-weight:800; color:var(--green);">{{ r['deposit_paid'] | money }}</div></div>
+    <div><div class="eyebrow">Due at pickup</div><div style="font-size:16px; font-weight:800; color:var(--orange);">{{ r['balance_due'] | money }}</div></div>
+  </div>
+  <div style="height:7px; border-radius:4px; background:#F1F0F4; margin-top:14px; overflow:hidden;">
+    <div style="width:{{ ((r['deposit_paid'] / r['total_price'] * 100) if r['total_price'] else 0) | round(0) }}%; height:100%; background:var(--purple);"></div>
+  </div>
+</div>
+
+<h2 style="font-size:16px; margin-bottom:10px;">Documents</h2>
+<div class="card" style="margin-bottom:16px; overflow:hidden;">
+  <div class="row-between" style="padding:13px 16px; border-bottom:1px solid var(--line);">
+    <span style="font-size:13px; font-weight:700;">Purchase Agreement</span>
+    <span class="pill {{ 'pill-green' if r['contract_signed'] else 'pill-amber' }}">{{ 'Signed' if r['contract_signed'] else 'Pending your signature' }}</span>
+  </div>
+  <div class="row-between" style="padding:13px 16px;">
+    <span style="font-size:13px; font-weight:700;">Health Guarantee</span>
+    <span class="pill {{ 'pill-green' if r['health_guarantee_ready'] else 'pill-amber' }}">{{ 'Ready' if r['health_guarantee_ready'] else 'Available at pickup' }}</span>
+  </div>
+</div>
+
+{% if not r['contract_signed'] %}
+<div class="card card-pad" style="margin-bottom:24px;">
+  <div class="eyebrow" style="margin-bottom:8px;">Sign your Purchase Agreement</div>
+  <p class="hint" style="margin-bottom:12px;">Typing your full name below counts as your signature on this agreement.</p>
+  <form method="post" action="{{ url_for('portal_sign', token=token) }}" style="display:flex; gap:8px;">
+    <input type="text" name="buyer_signature" placeholder="Type your full legal name" required style="flex:1;">
+    <button class="btn btn-primary btn-sm" type="submit">Sign</button>
+  </form>
+</div>
+{% endif %}
+
+{% if r['go_home_sent'] %}
+<h2 style="font-size:16px; margin-bottom:10px;">Go-Home Binder</h2>
+<div class="card" style="margin-bottom:24px; overflow:hidden;">
+  {% if r['feeding_schedule'] %}<div style="padding:13px 16px; border-bottom:1px solid var(--line);"><div style="font-size:13px; font-weight:700;">Feeding Schedule</div><div style="font-size:12.5px; color:var(--muted); margin-top:4px;">{{ r['feeding_schedule'] }}</div></div>{% endif %}
+  {% if r['training_notes'] %}<div style="padding:13px 16px; border-bottom:1px solid var(--line);"><div style="font-size:13px; font-weight:700;">Training &amp; Socialization</div><div style="font-size:12.5px; color:var(--muted); margin-top:4px;">{{ r['training_notes'] }}</div></div>{% endif %}
+  <div class="row-between" style="padding:13px 16px; border-bottom:1px solid var(--line);"><span style="font-size:13px; font-weight:700;">AKC / Registration Paperwork</span><span class="pill {{ 'pill-green' if r['registration_status']=='Complete' else 'pill-amber' }}">{{ r['registration_status'] }}</span></div>
+  <div class="row-between" style="padding:13px 16px;"><span style="font-size:13px; font-weight:700;">Pickup Details</span><span style="font-size:12px; color:var(--muted); text-align:right;">{{ r['pickup_notes'] or 'In-person pickup, Colorado Springs' }}</span></div>
+</div>
+{% endif %}
+
+{% if lifetime and lifetime['is_home'] %}
+<h2 style="font-size:16px; margin-bottom:10px;">{{ r['puppy_name'] }}'s Lifetime Profile</h2>
+<div class="card card-pad" style="margin-bottom:24px; display:flex; align-items:center; justify-content:space-between;">
+  <div><div style="font-size:13px; font-weight:700;">{{ lifetime['age'] }}</div><div class="hint">Since coming home {{ r['pickup_date'] | dateread }}</div></div>
+  <div style="text-align:right;"><div style="font-size:13px; font-weight:700;">&#127874; {{ lifetime['next_birthday'].strftime('%b %-d') }}</div><div class="hint">Next birthday</div></div>
+</div>
+{% endif %}
+
+<h2 style="font-size:16px; margin-bottom:10px;">Message Tom &amp; Tara</h2>
+<div class="card card-pad">
+  <div class="stack" style="max-height:280px; overflow-y:auto; margin-bottom:14px;">
+    {% for m in messages %}
+      <div style="max-width:85%; {{ 'margin-left:auto;' if m['sender']=='buyer' }}">
+        <div style="background:{{ 'var(--purple-tint)' if m['sender']=='buyer' else '#F1F0F4' }}; padding:9px 12px; border-radius:12px; font-size:12.5px;">{{ m['body'] }}</div>
+        <div class="hint" style="text-align:{{ 'right' if m['sender']=='buyer' else 'left' }};">{{ 'You' if m['sender']=='buyer' else 'Summit Doodles' }} &middot; {{ m['created_at'][11:16] }}</div>
+      </div>
+    {% else %}
+      <div class="hint">Send a message any time -- we usually reply within a day.</div>
+    {% endfor %}
+  </div>
+  <form method="post" action="{{ url_for('portal_message_new', token=token) }}" style="display:flex; gap:8px;">
+    <input type="text" name="body" placeholder="Type a message..." required style="flex:1;">
+    <button class="btn btn-primary btn-sm" type="submit">Send</button>
+  </form>
+</div>
+{% endblock %}

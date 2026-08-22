@@ -1,0 +1,40 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ 'Edit litter' if litter else 'Start a litter' }} -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ 'Edit ' ~ litter['litter_name'] if litter else 'Start a litter' }}</h1></div>
+
+<form method="post" enctype="multipart/form-data" class="card card-pad" style="max-width:640px;">
+  <div class="field"><label>Litter name</label><input type="text" name="litter_name" required placeholder="e.g. Zulu x Yankee" value="{{ litter['litter_name'] if litter else '' }}"></div>
+  <div class="field-row">
+    <div class="field"><label>Dam</label><input type="text" name="dam_name_text" value="{{ litter['dam_name_text'] if litter else '' }}" placeholder="Free text, or match a dog's name exactly"></div>
+    <div class="field"><label>Sire</label><input type="text" name="sire_name_text" value="{{ litter['sire_name_text'] if litter else '' }}"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Breed</label><input type="text" name="breed" value="{{ litter['breed'] if litter else '' }}"></div>
+    <div class="field"><label>Status</label>
+      <select name="status">
+        {% for s in ['Planned','Expecting','Whelped','Reserving','Complete'] %}
+        <option value="{{ s }}" {{ 'selected' if litter and litter['status']==s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Bred date</label><input type="date" name="bred_date" value="{{ litter['bred_date'] if litter else '' }}"></div>
+    <div class="field"><label>Date of birth</label><input type="date" name="dob" value="{{ litter['dob'] if litter else '' }}"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Go-home date</label><input type="date" name="go_home_date" value="{{ litter['go_home_date'] if litter else '' }}"></div>
+    <div class="field"><label>Waitlist count</label><input type="number" name="waitlist_count" value="{{ litter['waitlist_count'] if litter else 0 }}"></div>
+  </div>
+  {% if litter %}
+  <div class="field"><label>Litter photo</label><input type="file" name="photo" accept="image/*"></div>
+  {% endif %}
+  <div class="field"><label>Notes</label><textarea name="notes">{{ litter['notes'] if litter else '' }}</textarea></div>
+
+  <div style="display:flex; gap:10px;">
+    <button class="btn btn-primary" type="submit">{{ 'Save changes' if litter else 'Create litter' }}</button>
+    <a class="btn btn-secondary" href="{{ url_for('litter_detail', litter_id=litter['id']) if litter else url_for('litters_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "admin_base.html" %}
+{% block title %}Litters -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Litters</h1><div class="sub">{{ litters | length }} litters</div></div>
+  <a class="btn btn-primary" href="{{ url_for('litter_new') }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5 V19 M5 12 H19"/></svg>
+    Start a litter
+  </a>
+</div>
+
+<div class="grid-2">
+  {% for l in litters %}
+    <a class="card" href="{{ url_for('litter_detail', litter_id=l['id']) }}" style="overflow:hidden; display:block;">
+      <div style="height:64px; background:linear-gradient(120deg,#0054AA,#1E73BE); display:flex; align-items:center; padding:0 16px;">
+        <span class="pill" style="background:rgba(255,255,255,0.22); color:#fff;">{{ l['status'] }}</span>
+      </div>
+      <div class="card-pad">
+        <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:17px;">{{ l['litter_name'] }}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">
+          {{ l['breed'] }} &middot;
+          {% if l['dob'] %}Born {{ l['dob'] | dateread }}{% else %}Not yet born{% endif %}
+        </div>
+        <div style="display:flex; gap:18px; margin-top:12px;">
+          <div><div class="eyebrow" style="font-size:10px;">Puppies</div><div style="font-weight:700; font-size:13px;">{{ l['puppy_count'] }}</div></div>
+          <div><div class="eyebrow" style="font-size:10px;">Available</div><div style="font-weight:700; font-size:13px;">{{ l['available_count'] }}</div></div>
+          <div><div class="eyebrow" style="font-size:10px;">Waitlist</div><div style="font-weight:700; font-size:13px;">{{ l['waitlist_count'] }}</div></div>
+        </div>
+      </div>
+    </a>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">No litters yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

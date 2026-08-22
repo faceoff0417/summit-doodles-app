@@ -1,0 +1,142 @@
+{% extends "public_base.html" %}
+{% block title %}Puppy Application -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="public-header" style="padding-top:0;">
+  <h1>Puppy Application</h1>
+  <p>Tell us about your family and we'll be in touch. A small deposit reserves your spot once you're approved -- nothing is charged by filling this out.</p>
+</div>
+
+<form method="post" class="card card-pad">
+  <fieldset>
+    <legend>Contact information</legend>
+    <div class="field-row">
+      <div class="field"><label>First name</label><input type="text" name="first_name" required></div>
+      <div class="field"><label>Last name</label><input type="text" name="last_name" required></div>
+    </div>
+    <div class="field"><label>Address line 1</label><input type="text" name="address_line1"></div>
+    <div class="field"><label>Address line 2</label><input type="text" name="address_line2"></div>
+    <div class="field-row">
+      <div class="field"><label>City</label><input type="text" name="city"></div>
+      <div class="field"><label>State</label>
+        <select name="state">
+          <option value="">Select...</option>
+          {% for st in ['CO','WY','NE','KS','NM','UT','TX','AZ','OK','Other'] %}<option>{{ st }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Zip / postal code</label><input type="text" name="zip" style="max-width:180px;"></div>
+    <div class="field-row">
+      <div class="field"><label>Phone</label><input type="tel" name="phone" required></div>
+      <div class="field"><label>Email</label><input type="email" name="email" required></div>
+    </div>
+    <div class="field">
+      <label>How did you hear about us?</label>
+      <select name="how_heard">
+        <option value="">Select...</option>
+        {% for h in ['Google Search/Ad','Facebook/Instagram','Nextdoor','Referral','Other'] %}<option>{{ h }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Preferred method of communication</label>
+      <div class="radio-group">
+        {% for c in ['Text','Phone Call','Email','Other'] %}
+        <label class="radio-item"><input type="radio" name="preferred_contact" value="{{ c }}" {{ 'checked' if loop.first }}>{{ c }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="field"><label>If you were referred to us, who referred you? <span style="font-weight:400;">(optional)</span></label><input type="text" name="referral_source"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Timeline &amp; household</legend>
+    <div class="field">
+      <label>When are you looking to bring a puppy home?</label>
+      <div class="radio-group">
+        {% for t in ['Immediate','0-3 months','6-12 months','Greater than a year'] %}
+        <label class="radio-item"><input type="radio" name="timeframe" value="{{ t }}" required>{{ t }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="field">
+      <label>Do you currently own a dog?</label>
+      <div class="radio-group">
+        {% for d in ['Yes (one)','Yes (two)','Yes (3+)','No'] %}
+        <label class="radio-item"><input type="radio" name="current_dogs" value="{{ d }}" required>{{ d }}</label>
+        {% endfor %}
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Puppy selection</legend>
+    <p class="hint" style="margin-bottom:14px;">Choices below are puppies currently available or coming up. Rank up to three -- if none feel right yet, just check "notify me" below.</p>
+    <div class="field">
+      <label>Puppy choice #1</label>
+      <select name="puppy_choice_1">
+        <option value="">No preference / a future litter</option>
+        {% for c in puppy_choices %}<option>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Puppy choice #2 <span style="font-weight:400;">(optional)</span></label>
+        <select name="puppy_choice_2"><option value="">--</option>{% for c in puppy_choices %}<option>{{ c }}</option>{% endfor %}</select>
+      </div>
+      <div class="field"><label>Puppy choice #3 <span style="font-weight:400;">(optional)</span></label>
+        <select name="puppy_choice_3"><option value="">--</option>{% for c in puppy_choices %}<option>{{ c }}</option>{% endfor %}</select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="checkbox-item" style="font-weight:700; color:var(--ink);"><input type="checkbox" name="notify_future_litters" checked>Notify me of future puppy litters</label>
+    </div>
+    <div class="field">
+      <label>Gender preference</label>
+      <div class="radio-group">
+        {% for g in ['Male','Female',"Don't care"] %}
+        <label class="radio-item"><input type="radio" name="gender_preference" value="{{ g }}" required {{ 'checked' if loop.last }}>{{ g }}</label>
+        {% endfor %}
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Delivery &amp; training</legend>
+    <div class="field">
+      <label>Puppy delivery</label>
+      <div class="radio-group">
+        {% for d in ['In-person pickup','Delivery needed'] %}
+        <label class="radio-item"><input type="radio" name="delivery_pref" value="{{ d }}" required>{{ d }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="field">
+      <label>Interested in a training package?</label>
+      <div class="radio-group">
+        {% for t in ['Yes','No'] %}
+        <label class="radio-item"><input type="radio" name="training_interest" value="{{ t }}" required>{{ t }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="field">
+      <label>Training package</label>
+      <select name="training_package">
+        <option value="">--</option>
+        {% for p in ['Basic','Bronze','Silver','Gold'] %}<option>{{ p }}</option>{% endfor %}
+      </select>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Agreement &amp; signature</legend>
+    <div class="field">
+      <label class="checkbox-item" style="font-weight:700; color:var(--ink);"><input type="checkbox" name="contract_agree" required>I have read and agree to all the terms and conditions of the Puppy Purchase Contract.</label>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Signature (type your full name)</label><input type="text" name="signature_text" required></div>
+      <div class="field"><label>Date</label><input type="date" name="signature_date" value="{{ today }}" required></div>
+    </div>
+    <div class="field"><label>Anything else you'd like us to know? <span style="font-weight:400;">(optional)</span></label><textarea name="comments"></textarea></div>
+  </fieldset>
+
+  <button class="btn btn-primary btn-block" type="submit">Submit application</button>
+</form>
+{% endblock %}

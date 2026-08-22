@@ -1,0 +1,49 @@
+{% extends "admin_base.html" %}
+{% block title %}Documents -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Document Vault</h1><div class="sub">{{ docs | length }} files on file</div></div>
+
+<div class="grid-2">
+  <div class="stack">
+    <h2 style="font-size:16px;">Templates</h2>
+    <div class="card" style="overflow:hidden;">
+      <div class="row" style="border-bottom:1px solid var(--line);"><div class="ic" style="background:var(--purple-tint);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8"><path d="M7 3 H15 L19 7 V21 H7 Z"/><path d="M15 3 V7 H19"/></svg></div><div style="flex:1;"><div style="font-size:13px; font-weight:700;">Puppy Purchase Agreement</div><div class="hint">Signed digitally by buyers on their portal</div></div></div>
+      <div class="row" style="border-bottom:1px solid var(--line);"><div class="ic" style="background:var(--blue-deep-tint);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue-accent)" stroke-width="1.8"><path d="M12 3 L4 7 V12 C4 17 7.5 20 12 21 C16.5 20 20 17 20 12 V7 Z"/></svg></div><div style="flex:1;"><div style="font-size:13px; font-weight:700;">Health Guarantee</div><div class="hint">2-year genetic guarantee</div></div></div>
+      <div class="row" style="border-bottom:1px solid var(--line);"><div class="ic" style="background:var(--green-tint);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 12 L11 14.5 L15.5 9.5"/></svg></div><div style="flex:1;"><div style="font-size:13px; font-weight:700;">Home Guardian Agreement</div><div class="hint">Guardian Program placements</div></div></div>
+      <div class="row"><div class="ic" style="background:#F1F0F4;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M7 3 H15 L19 7 V21 H7 Z"/><path d="M15 3 V7 H19"/></svg></div><div style="flex:1;"><div style="font-size:13px; font-weight:700;">Deposit / Reservation Agreement</div><div class="hint">Non-refundable deposit terms</div></div></div>
+    </div>
+    <p class="hint">These four are the templates your business uses. Upload your actual template files below to keep the signed copies alongside them.</p>
+  </div>
+
+  <div class="stack">
+    <h2 style="font-size:16px;">Upload a document</h2>
+    <div class="card card-pad">
+      <form method="post" action="{{ url_for('documents') }}" enctype="multipart/form-data">
+        <div class="field"><label>Title</label><input type="text" name="title" required></div>
+        <div class="field"><label>Category</label>
+          <select name="category">
+            <option>Contract</option><option>Health Guarantee</option><option>Health Record</option>
+            <option>Registration</option><option>Guardian Agreement</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>File</label><input type="file" name="file" required></div>
+        <button class="btn btn-primary" type="submit">Upload</button>
+      </form>
+    </div>
+
+    <h2 style="font-size:16px; margin-top:10px;">All Documents</h2>
+    {% for d in docs %}
+      <div class="card card-pad" style="display:flex; align-items:center; gap:12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8"><path d="M7 3 H15 L19 7 V21 H7 Z"/><path d="M15 3 V7 H19"/></svg>
+        <div style="flex:1;"><div style="font-size:13px; font-weight:700;">{{ d['title'] }}</div><div class="hint">{{ d['category'] or 'Uncategorized' }} &middot; {{ d['uploaded_at'][:10] }}</div></div>
+        <a href="{{ url_for('uploaded_file', filename=d['filename']) }}" target="_blank" class="btn btn-secondary btn-sm">Open</a>
+        <form method="post" action="{{ url_for('document_delete', doc_id=d['id']) }}" onsubmit="return confirm('Delete this document?');">
+          <button class="btn btn-secondary btn-sm" type="submit" style="color:var(--red);">Delete</button>
+        </form>
+      </div>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">Nothing uploaded yet.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

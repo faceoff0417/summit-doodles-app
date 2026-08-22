@@ -1,0 +1,12 @@
+{% extends "public_base.html" %}
+{% block title %}Thank you -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="card card-pad" style="text-align:center; padding:48px 24px;">
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00AB8E" stroke-width="1.8" style="margin:0 auto;"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+  <h1 style="font-size:22px; margin-top:16px;">Thank you!</h1>
+  <p style="color:var(--muted); font-size:14px; margin-top:8px; max-width:44ch; margin-left:auto; margin-right:auto; line-height:1.6;">
+    Your application has been received. Tom &amp; Tara typically respond within 1-2 business days -- keep an eye on your inbox (and text messages, if that's your preference).
+  </p>
+  <a class="btn btn-secondary" style="margin-top:20px;" href="{{ url_for('apply') }}">Back to the application</a>
+</div>
+{% endblock %}

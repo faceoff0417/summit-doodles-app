@@ -1,0 +1,33 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ c['name'] }} -- Contact{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ c['name'] }}</h1><div class="sub">{{ c['submitted_at'][:10] }} &middot; <span class="pill {{ pill_class(c['status']) }}">{{ c['status'] }}</span></div></div>
+</div>
+
+<div class="grid-2">
+  <div class="card card-pad">
+    <table>
+      <tr><td>Email</td><td><a href="mailto:{{ c['email'] }}">{{ c['email'] }}</a></td></tr>
+      <tr><td>Phone</td><td>{{ c['phone'] or '--' }}</td></tr>
+      <tr><td>Location</td><td>{{ c['city_state'] or '--' }}</td></tr>
+      <tr><td>Subject</td><td>{{ c['subject'] }}</td></tr>
+      <tr><td>How they heard about us</td><td>{{ c['how_heard'] or '--' }}</td></tr>
+    </table>
+    {% if c['message'] %}
+    <div style="margin-top:16px;"><div class="eyebrow">Message</div><p style="margin-top:6px; font-size:13.5px; line-height:1.6;">{{ c['message'] }}</p></div>
+    {% endif %}
+  </div>
+  <div class="card card-pad">
+    <div class="eyebrow" style="margin-bottom:12px;">Status</div>
+    <form method="post">
+      <div class="field">
+        <select name="status">
+          {% for s in ['New','Replied','Closed'] %}<option value="{{ s }}" {{ 'selected' if c['status']==s }}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Update</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ litter['litter_name'] }} -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>{{ litter['litter_name'] }}</h1>
+    <div class="sub">{{ litter['breed'] }} &middot; <span class="pill {{ pill_class(litter['status']) }}">{{ litter['status'] }}</span></div>
+  </div>
+  <a class="btn btn-secondary" href="{{ url_for('litter_edit', litter_id=litter['id']) }}">Edit litter</a>
+</div>
+
+<div class="grid-4" style="margin-bottom:24px;">
+  <div class="card kpi"><div class="eyebrow">Born</div><div style="font-weight:800; font-size:15px; margin-top:4px;">{{ litter['dob'] | dateread if litter['dob'] else 'Not yet' }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Go-home</div><div style="font-weight:800; font-size:15px; margin-top:4px;">{{ litter['go_home_date'] | dateread if litter['go_home_date'] else 'TBD' }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Dam &times; Sire</div><div style="font-weight:800; font-size:14px; margin-top:4px;">{{ litter['dam_name'] or '--' }} &times; {{ litter['sire_name'] or '--' }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Waitlist</div><div class="num" style="color:var(--purple);">{{ litter['waitlist_count'] }}</div></div>
+</div>
+
+{% if litter['coi_percent'] is not none %}
+<div class="card card-pad" style="margin-bottom:24px; display:flex; align-items:center; justify-content:space-between;">
+  <div><div class="eyebrow">Coefficient of Inbreeding (5-gen)</div>{% if litter['coi_notes'] %}<div class="hint" style="margin-top:2px;">{{ litter['coi_notes'] }}</div>{% endif %}</div>
+  <div style="font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:{{ 'var(--green)' if litter['coi_percent'] < 6.25 else 'var(--orange)' }};">{{ litter['coi_percent'] }}%</div>
+</div>
+{% endif %}
+
+{% if litter['notes'] %}<div class="card card-pad" style="margin-bottom:24px; font-size:13px; color:var(--muted);">{{ litter['notes'] }}</div>{% endif %}
+
+<div class="row-between" style="margin-bottom:12px;"><h2 style="font-size:16px;">Puppies ({{ puppies | length }})</h2></div>
+
+<div class="grid-3" style="margin-bottom:28px;">
+  {% for p in puppies %}
+    <div class="card card-pad">
+      <div class="row-between">
+        <span style="font-weight:800; font-size:14px;">{{ p['name'] }}</span>
+        <span class="pill {{ pill_class(p['status']) }}">{{ p['status'] }}</span>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-top:3px;">{{ p['sex'] }} &middot; {{ p['color'] }}</div>
+      <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ p['current_weight_lbs'] }} lbs {% if p['price'] %}&middot; {{ p['price'] | money }}{% endif %}</div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('puppy_edit', puppy_id=p['id']) }}">Edit</a>
+        {% if p['status'] in ('Available','On Hold') %}
+        <a class="btn btn-primary btn-sm" href="{{ url_for('reservation_new', puppy_id=p['id']) }}">Reserve</a>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted); grid-column:1/-1;">No puppies logged yet.</div>
+  {% endfor %}
+</div>
+
+<div class="card card-pad" style="max-width:640px; margin-bottom:28px;">
+  <div class="eyebrow" style="margin-bottom:12px;">Add a puppy</div>
+  <form method="post" action="{{ url_for('puppy_new', litter_id=litter['id']) }}">
+    <div class="field-row">
+      <div class="field"><label>Name</label><input type="text" name="name" required></div>
+      <div class="field"><label>Sex</label><select name="sex"><option>Male</option><option>Female</option></select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Color</label><input type="text" name="color"></div>
+      <div class="field"><label>Price</label><input type="number" step="1" name="price"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Birth weight (oz)</label><input type="number" step="0.1" name="birth_weight_oz"></div>
+      <div class="field"><label>Current weight (lbs)</label><input type="number" step="0.1" name="current_weight_lbs"></div>
+    </div>
+    <button class="btn btn-secondary" type="submit">Add puppy</button>
+  </form>
+</div>
+{% endblock %}

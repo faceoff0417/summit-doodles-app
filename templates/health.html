@@ -1,0 +1,93 @@
+{% extends "admin_base.html" %}
+{% block title %}Health & Genetics -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Health &amp; Genetics</h1><div class="sub">Kennel-wide reminders and a carrier/clear matrix</div></div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px;">
+  <div class="card kpi"><div class="eyebrow">Open reminders</div><div class="num" style="color:var(--orange);">{{ open_reminders | length }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Dogs with OFA on file</div><div class="num" style="color:var(--purple);">{{ tested_count }}/{{ dogs | length }}</div></div>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <h2 style="font-size:16px;">Reminders</h2>
+    {% for r in reminders %}
+      <div class="card" style="padding:13px 16px; display:flex; align-items:center; gap:12px; {% if r['done'] %}opacity:0.55;{% endif %}">
+        <form method="post" action="{{ url_for('reminder_toggle', reminder_id=r['id']) }}">
+          <button type="submit" class="checklist-item" style="padding:0; background:none; border:none; cursor:pointer;">
+            <span class="dot" style="background:{{ 'var(--green-tint)' if r['done'] else '#F1F0F4' }};">
+              {% if r['done'] %}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3"><path d="M5 12 L10 17 L19 7"/></svg>{% endif %}
+            </span>
+          </button>
+        </form>
+        <div style="flex:1;">
+          <div style="font-size:13px; font-weight:700; {% if r['done'] %}text-decoration:line-through;{% endif %}">{{ r['title'] }}</div>
+          <div style="font-size:11.5px; color:var(--muted);">{{ r['entity_name'] }} &middot; {{ r['due_date'] | dateread if r['due_date'] else 'No date' }}</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">No reminders yet.</div>
+    {% endfor %}
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Add a reminder</div>
+      <form method="post" action="{{ url_for('reminder_new') }}">
+        <div class="field-row">
+          <div class="field"><label>For</label>
+            <select name="entity_type" required>
+              <option value="dog">A dog</option>
+              <option value="puppy">A puppy</option>
+            </select>
+          </div>
+          <div class="field"><label>Which dog</label>
+            <select name="entity_id" required>
+              {% for d in dogs %}<option value="{{ d['id'] }}">{{ d['name'] }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="hint" style="margin:-10px 0 14px;">For a puppy reminder, use the dog dropdown's matching id manually if needed -- or add puppy reminders from the litter page.</div>
+        <div class="field-row">
+          <div class="field"><label>Reminder</label><input type="text" name="title" required placeholder="e.g. Bordetella booster"></div>
+          <div class="field"><label>Due date</label><input type="date" name="due_date"></div>
+        </div>
+        <button class="btn btn-secondary" type="submit">Add reminder</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h2 style="font-size:16px;">Carrier / Clear Matrix</h2>
+    <div class="card" style="overflow-x:auto;">
+      <table style="min-width:420px;">
+        <tr><th>Dog</th><th>EIC</th><th>DM</th><th>vWD</th><th>PRA</th></tr>
+        {% for d in dogs %}
+        <tr>
+          <td style="font-weight:700;">{{ d['name'] }}</td>
+          {% for trait in ['eic','dm','vwd','pra'] %}
+            {% set val = d[trait] %}
+            <td>{% if val %}<span class="pill {{ 'pill-green' if val=='Clear' else ('pill-red' if val=='Affected' else 'pill-amber') }}">{{ val }}</span>{% else %}<span class="hint">--</span>{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <p class="hint">Pairing a Carrier with a Carrier for the same condition is flagged automatically in Breeding &rarr; Pairing Tool.</p>
+
+    <div class="row-between" style="margin-top:10px;">
+      <h2 style="font-size:16px;">Document Vault</h2>
+      <a href="{{ url_for('documents') }}" style="font-size:12.5px; font-weight:700;">View all ({{ doc_count }})</a>
+    </div>
+    {% for doc in documents %}
+      <div class="card" style="padding:12px 16px; display:flex; align-items:center; gap:12px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8"><path d="M7 3 H15 L19 7 V21 H7 Z"/><path d="M15 3 V7 H19"/></svg>
+        <div style="flex:1;"><div style="font-size:13px; font-weight:700;">{{ doc['title'] }}</div><div class="hint">{{ doc['category'] or 'Uncategorized' }}</div></div>
+        <a href="{{ url_for('uploaded_file', filename=doc['filename']) }}" target="_blank" class="btn btn-secondary btn-sm">Open</a>
+      </div>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">No documents uploaded yet -- add some from the Documents page.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

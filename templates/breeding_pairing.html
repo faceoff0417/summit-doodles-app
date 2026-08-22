@@ -1,0 +1,63 @@
+{% extends "admin_base.html" %}
+{% block title %}Pairing Tool -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Pairing Tool</h1><div class="sub">Check genetic compatibility between a sire and dam</div></div>
+  <a class="btn btn-secondary" href="{{ url_for('breeding') }}">Back to Breeding</a>
+</div>
+
+<form method="get" class="card card-pad" style="max-width:560px; margin-bottom:20px;">
+  <div class="field-row">
+    <div class="field"><label>Dam</label>
+      <select name="dam_id">
+        <option value="">Select...</option>
+        {% for d in dogs %}{% if d['sex']=='Female' %}<option value="{{ d['id'] }}" {{ 'selected' if dam_id==d['id'] }}>{{ d['name'] }}</option>{% endif %}{% endfor %}
+      </select>
+    </div>
+    <div class="field"><label>Sire</label>
+      <select name="sire_id">
+        <option value="">Select...</option>
+        {% for d in dogs %}{% if d['sex']=='Male' %}<option value="{{ d['id'] }}" {{ 'selected' if sire_id==d['id'] }}>{{ d['name'] }}</option>{% endif %}{% endfor %}
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Check compatibility</button>
+</form>
+
+{% if result %}
+<div class="card card-pad" style="max-width:560px; margin-bottom:16px;">
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div style="flex:1; padding:10px; border-radius:12px; background:var(--purple-tint); text-align:center; font-weight:700; font-size:13px; color:var(--purple);">{{ result['dam']['name'] }} (Dam)</div>
+    <span style="color:var(--muted); font-weight:700;">&times;</span>
+    <div style="flex:1; padding:10px; border-radius:12px; background:var(--blue-deep-tint); text-align:center; font-weight:700; font-size:13px; color:var(--blue-accent);">{{ result['sire']['name'] }} (Sire)</div>
+  </div>
+</div>
+
+<div class="card card-pad" style="max-width:560px; margin-bottom:16px;">
+  <div class="eyebrow" style="margin-bottom:10px;">Genetic Compatibility</div>
+  {% if result['warnings'] %}
+    {% for w in result['warnings'] %}
+      <div style="padding:10px 12px; background:var(--amber-tint); border-radius:10px; font-size:12.5px; color:#7A4508; margin-bottom:8px;">&#9888; {{ w }}</div>
+    {% endfor %}
+  {% else %}
+    <div style="padding:10px 12px; background:var(--green-tint); border-radius:10px; font-size:12.5px; color:#036653;">No carrier &times; carrier conflicts found across tested traits.</div>
+  {% endif %}
+  {% if result['clears'] %}<div class="hint" style="margin-top:8px;">Clear on both sides: {{ result['clears'] | join(', ') }}</div>{% endif %}
+</div>
+
+<form method="post" action="{{ url_for('breeding_pairing') }}" class="card card-pad" style="max-width:560px;">
+  <input type="hidden" name="sire_id" value="{{ sire_id }}">
+  <input type="hidden" name="dam_id" value="{{ dam_id }}">
+  <input type="hidden" name="action" value="save_litter">
+  <div class="eyebrow" style="margin-bottom:12px;">Save as a planned litter</div>
+  <div class="field"><label>Litter name</label><input type="text" name="litter_name" required value="{{ result['dam']['name'] }} x {{ result['sire']['name'] }}"></div>
+  <div class="field"><label>Breed</label><input type="text" name="breed" value="{{ result['dam']['breed'] }}"></div>
+  <div class="field-row">
+    <div class="field"><label>Estimated COI (5-gen), %</label><input type="number" step="0.1" name="coi_percent" placeholder="From your pedigree software"></div>
+    <div class="field"><label>COI notes</label><input type="text" name="coi_notes" placeholder="e.g. common ancestor 4 gens back"></div>
+  </div>
+  <p class="hint" style="margin-bottom:16px;">We don't have your dogs' full multi-generation pedigree on file, so COI is entered manually from your pedigree software or registry records -- it's saved here for record-keeping.</p>
+  <button class="btn btn-primary" type="submit">Create planned litter</button>
+</form>
+{% endif %}
+{% endblock %}

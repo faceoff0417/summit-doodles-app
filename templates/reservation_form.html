@@ -1,0 +1,30 @@
+{% extends "admin_base.html" %}
+{% block title %}New reservation -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>New reservation</h1></div>
+
+<form method="post" class="card card-pad" style="max-width:600px;">
+  <div class="field">
+    <label>Puppy</label>
+    <select name="puppy_id" required id="puppy_id" onchange="document.getElementById('price').value = this.selectedOptions[0].dataset.price || ''">
+      <option value="">Select a puppy...</option>
+      {% for p in puppies %}
+        <option value="{{ p['id'] }}" data-price="{{ p['price'] or '' }}" {{ 'selected' if preselect==p['id'] }}>{{ p['litter_name'] }} -- {{ p['name'] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Buyer name</label><input type="text" name="buyer_name" required></div>
+    <div class="field"><label>Buyer email</label><input type="email" name="buyer_email" required></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Buyer phone</label><input type="tel" name="buyer_phone"></div>
+    <div class="field"><label>Pickup date</label><input type="date" name="pickup_date"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Total price</label><input id="price" type="number" step="1" name="total_price"></div>
+    <div class="field"><label>Deposit paid</label><input type="number" step="1" name="deposit_paid" value="500"></div>
+  </div>
+  <button class="btn btn-primary" type="submit">Create reservation &amp; generate portal link</button>
+</form>
+{% endblock %}

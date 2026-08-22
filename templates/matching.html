@@ -1,0 +1,51 @@
+{% extends "admin_base.html" %}
+{% block title %}Matching -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Buyer &harr; Puppy Matching</h1><div class="sub">Score available puppies against a family's application</div></div>
+
+<form method="get" class="card card-pad" style="max-width:520px; margin-bottom:20px;">
+  <div class="field"><label>Application</label>
+    <select name="application_id" onchange="this.form.submit()">
+      <option value="">Select a family...</option>
+      {% for a in applications %}
+        <option value="{{ a['id'] }}" {{ 'selected' if chosen and chosen['id']==a['id'] }}>{{ a['first_name'] }} {{ a['last_name'] }} &middot; {{ a['status'] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <noscript><button class="btn btn-secondary" type="submit">Go</button></noscript>
+</form>
+
+{% if chosen %}
+<div class="card card-pad" style="margin-bottom:20px;">
+  <div class="eyebrow">Buyer</div>
+  <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+    <div class="avatar" style="width:40px; height:40px; font-size:13px; background:var(--purple);">{{ chosen['last_name'][0] }}</div>
+    <div><div style="font-size:14px; font-weight:800;">{{ chosen['first_name'] }} {{ chosen['last_name'] }}</div><div class="hint">{{ chosen['city'] }}, {{ chosen['state'] }} &middot; {{ chosen['timeframe'] }}</div></div>
+  </div>
+  <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;">
+    <span class="pill pill-gray">Wants: {{ chosen['gender_preference'] or 'no preference' }}</span>
+    {% if chosen['puppy_choice_1'] %}<span class="pill pill-gray">Choice: {{ chosen['puppy_choice_1'] }}</span>{% endif %}
+  </div>
+</div>
+
+<h2 style="font-size:16px; margin-bottom:10px;">Recommended Matches</h2>
+<div class="stack">
+  {% for m in matches %}
+    <div class="card card-pad">
+      <div class="row-between">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="puppy-thumb" style="width:48px; height:48px;"></div>
+          <div><div style="font-size:14px; font-weight:800;">{{ m['puppy']['name'] }}</div><div class="hint">{{ m['puppy']['sex'] }} &middot; {{ m['puppy']['color'] }} &middot; {{ m['puppy']['litter_name'] }}</div></div>
+        </div>
+        <div style="text-align:right;"><div style="font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:{{ 'var(--green)' if m['score']>=70 else ('var(--blue-accent)' if m['score']>=40 else 'var(--purple)') }};">{{ m['score'] }}%</div><div class="hint">match</div></div>
+      </div>
+      <div style="height:6px; border-radius:4px; background:#F1F0F4; margin-top:12px; overflow:hidden;"><div style="width:{{ m['score'] }}%; height:100%; background:{{ 'var(--green)' if m['score']>=70 else ('var(--blue-accent)' if m['score']>=40 else 'var(--purple)') }};"></div></div>
+      {% if m['reasons'] %}<div class="hint" style="margin-top:8px;">{{ m['reasons'] | join(' &middot; ') | safe }}</div>{% endif %}
+      <a class="btn btn-primary btn-sm" style="margin-top:12px;" href="{{ url_for('reservation_new', puppy_id=m['puppy']['id']) }}">Reserve for {{ chosen['first_name'] }}</a>
+    </div>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">No available puppies to match right now.</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

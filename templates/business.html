@@ -1,0 +1,81 @@
+{% extends "admin_base.html" %}
+{% block title %}Business -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Business</h1><div class="sub">Revenue, expenses &amp; profit by litter</div></div>
+
+<div class="card card-pad" style="margin-bottom:20px; background:linear-gradient(135deg,var(--blue-deep),var(--blue-accent)); border:none;">
+  <div style="font-size:11px; color:rgba(255,255,255,0.8); font-weight:700; letter-spacing:0.06em;">NET (PAID INVOICES &minus; EXPENSES)</div>
+  <div style="font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:#fff; margin-top:4px;">{{ (paid_invoices - expenses_total) | money }}</div>
+</div>
+
+<div class="grid-4" style="margin-bottom:24px;">
+  <div class="card kpi"><div class="eyebrow">Deposits this month</div><div class="num" style="color:var(--green);">{{ revenue_mtd | money }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Expenses this month</div><div class="num" style="color:var(--orange);">{{ expenses_mtd | money }}</div></div>
+  <div class="card kpi"><div class="eyebrow">A/R (balances due)</div><div class="num" style="color:var(--blue-accent);">{{ ar | money }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Invoices due</div><div class="num" style="color:var(--purple);">{{ due_invoices | money }}</div></div>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <h2 style="font-size:16px;">Profit by Litter</h2>
+    <div class="card card-pad">
+      {% for p in profit_by_litter %}
+        <div style="margin-bottom:14px;">
+          <div class="row-between"><span style="font-weight:700; font-size:12.5px;">{{ p['litter']['litter_name'] }}</span><span style="font-weight:700; font-size:12.5px; color:{{ 'var(--green)' if p['profit']>=0 else 'var(--red)' }};">{{ p['profit'] | money }}</span></div>
+          <div class="hint">{{ p['revenue'] | money }} revenue &minus; {{ p['expenses'] | money }} expenses</div>
+          <div style="height:6px; border-radius:4px; background:#F1F0F4; margin-top:5px; overflow:hidden;">
+            <div style="width:{{ ((p['revenue'] / (profit_by_litter | map(attribute='revenue') | max) * 100) if (profit_by_litter | map(attribute='revenue') | max) else 0) | round(0) }}%; height:100%; background:var(--purple);"></div>
+          </div>
+        </div>
+      {% else %}
+        <div style="color:var(--muted);">No litters yet.</div>
+      {% endfor %}
+    </div>
+
+    <h2 style="font-size:16px; margin-top:10px;">Customer Acquisition Sources</h2>
+    <div class="card card-pad">
+      {% for s in sources %}
+        <div class="row-between" style="margin-bottom:10px;"><span style="font-size:12.5px;">{{ s['how_heard'] }}</span><span class="pill pill-purple">{{ (s['c']/total_leads*100) | round(0) | int }}%</span></div>
+      {% else %}
+        <div style="color:var(--muted);">No application data yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="stack">
+    <h2 style="font-size:16px;">Recent Expenses</h2>
+    <div class="card" style="overflow-x:auto;">
+      <table>
+        <tr><th>Category</th><th>Description</th><th>Litter</th><th>Amount</th><th>Date</th></tr>
+        {% for e in expense_rows %}
+        <tr>
+          <td>{{ e['category'] }}</td>
+          <td>{{ e['description'] or '--' }}</td>
+          <td>{{ e['litter_id'] or '--' }}</td>
+          <td>{{ e['amount'] | money }}</td>
+          <td>{{ e['expense_date'] | dateread }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="color:var(--muted);">No expenses logged yet.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Log an expense</div>
+      <form method="post" action="{{ url_for('expense_new') }}">
+        <div class="field-row">
+          <div class="field"><label>Category</label><input type="text" name="category" required placeholder="Veterinary, Supplies, Marketing..."></div>
+          <div class="field"><label>Amount</label><input type="number" step="0.01" name="amount" required></div>
+        </div>
+        <div class="field"><label>Description</label><input type="text" name="description"></div>
+        <div class="field-row">
+          <div class="field"><label>Date</label><input type="date" name="expense_date" required></div>
+          <div class="field"><label>Litter (optional id)</label><input type="number" name="litter_id" placeholder="Litter #"></div>
+        </div>
+        <button class="btn btn-secondary" type="submit">Add expense</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

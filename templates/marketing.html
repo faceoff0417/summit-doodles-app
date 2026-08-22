@@ -1,0 +1,64 @@
+{% extends "admin_base.html" %}
+{% block title %}Marketing -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Marketing</h1><div class="sub">Website listings, campaign log &amp; referral tracking</div></div>
+
+<div class="card card-pad" style="margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+  <div style="display:flex; align-items:center; gap:10px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-deep)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12 H21 M12 3 a13 13 0 0 1 0 18 a13 13 0 0 1 0 -18"/></svg>
+    <div><div style="font-size:13px; font-weight:700;">Public puppy listings</div><div class="hint">{{ available_count }} puppies live at /puppies</div></div>
+  </div>
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('puppies_public') }}" target="_blank">View listings &#8599;</a>
+</div>
+
+<div class="grid-2">
+  <div class="stack">
+    <div class="row-between"><h2 style="font-size:16px;">Campaign Log</h2></div>
+    {% for c in campaigns %}
+      <div class="card card-pad">
+        <div class="row-between">
+          <span style="font-weight:700; font-size:13px;">{{ c['title'] }}</span>
+          <span class="pill {{ pill_class(c['status']) }}">{{ c['status'] }}</span>
+        </div>
+        <div class="hint" style="margin-top:3px;">{{ c['channel'] }}{% if c['scheduled_for'] %} &middot; scheduled {{ c['scheduled_for'] }}{% endif %}{% if c['sent_at'] %} &middot; sent {{ c['sent_at'][:16] }}{% endif %}</div>
+        {% if c['status'] != 'Sent' %}
+          <form method="post" action="{{ url_for('campaign_mark_sent', campaign_id=c['id']) }}" style="margin-top:10px;">
+            <button class="btn btn-secondary btn-sm" type="submit">Mark sent</button>
+          </form>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="card card-pad" style="color:var(--muted);">No campaigns logged yet.</div>
+    {% endfor %}
+
+    <div class="card card-pad">
+      <div class="eyebrow" style="margin-bottom:12px;">Log a campaign</div>
+      <p class="hint" style="margin-bottom:14px;">This keeps a record of what you posted or sent -- it doesn't publish to Instagram/Facebook or send email for you.</p>
+      <form method="post" action="{{ url_for('campaign_new') }}">
+        <div class="field-row">
+          <div class="field"><label>Channel</label><select name="channel"><option>Social</option><option>Email</option></select></div>
+          <div class="field"><label>Status</label><select name="status"><option>Draft</option><option>Scheduled</option><option>Sent</option></select></div>
+        </div>
+        <div class="field"><label>Title</label><input type="text" name="title" required></div>
+        <div class="field"><label>Body / notes</label><textarea name="body"></textarea></div>
+        <div class="field"><label>Scheduled for</label><input type="text" name="scheduled_for" placeholder="e.g. 2026-08-25 5:00 PM"></div>
+        <button class="btn btn-secondary" type="submit">Save campaign</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="stack">
+    <h2 style="font-size:16px;">Waitlist Growth</h2>
+    <div class="card kpi"><div class="eyebrow">Total families waitlisted across litters</div><div class="num" style="color:var(--purple);">{{ waitlist_total }}</div></div>
+
+    <h2 style="font-size:16px; margin-top:10px;">Referral Tracking</h2>
+    <div class="card card-pad">
+      {% for r in referrals %}
+        <div class="row-between" style="margin-bottom:10px;"><span style="font-size:13px; font-weight:700;">{{ r['referral_source'] }}</span><span class="pill pill-green">{{ r['c'] }} referral{{ 's' if r['c'] != 1 }}</span></div>
+      {% else %}
+        <div style="color:var(--muted);">No referral sources recorded yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

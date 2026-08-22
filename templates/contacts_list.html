@@ -1,0 +1,23 @@
+{% extends "admin_base.html" %}
+{% block title %}Contacts -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Contact Messages</h1><div class="sub">{{ contacts | length }} messages &middot; from the public contact form</div></div>
+  <a class="btn btn-secondary" href="{{ url_for('contact') }}" target="_blank" rel="noopener">View public form &#8599;</a>
+</div>
+
+<div class="stack">
+  {% for c in contacts %}
+    <a class="card card-pad" href="{{ url_for('contact_detail', contact_id=c['id']) }}" style="display:block;">
+      <div class="row-between">
+        <span style="font-weight:800; font-size:14px;">{{ c['name'] }}</span>
+        <span class="pill {{ pill_class(c['status']) }}">{{ c['status'] }}</span>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-top:3px;">{{ c['city_state'] }} &middot; {{ c['submitted_at'][:10] }}</div>
+      <div style="font-size:13px; margin-top:6px; font-weight:600;">{{ c['subject'] }}</div>
+    </a>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">Nothing here yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

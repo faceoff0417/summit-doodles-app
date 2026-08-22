@@ -1,0 +1,29 @@
+{% extends "admin_base.html" %}
+{% block title %}Reservations -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Reservations</h1><div class="sub">{{ reservations | length }} active reservations</div></div>
+  <a class="btn btn-primary" href="{{ url_for('reservation_new') }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5 V19 M5 12 H19"/></svg>
+    New reservation
+  </a>
+</div>
+
+<div class="stack">
+  {% for r in reservations %}
+    <a class="card card-pad" href="{{ url_for('reservation_detail', res_id=r['id']) }}" style="display:flex; align-items:center; gap:14px;">
+      <div class="avatar" style="width:44px; height:44px; font-size:14px; background:var(--blue-deep);">{{ r['puppy_name'][0] }}</div>
+      <div style="flex:1;">
+        <div style="font-weight:800; font-size:14px;">{{ r['puppy_name'] }} <span style="font-weight:500; color:var(--muted); font-size:12.5px;">&middot; {{ r['litter_name'] }}</span></div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ r['buyer_name'] }} &middot; pickup {{ r['pickup_date'] | dateread }}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12.5px; font-weight:700;">{{ r['deposit_paid'] | money }} / {{ r['total_price'] | money }}</div>
+        <span class="pill {{ 'pill-green' if r['contract_signed'] else 'pill-amber' }}">{{ 'Contract signed' if r['contract_signed'] else 'Awaiting signature' }}</span>
+      </div>
+    </a>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">No reservations yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}
