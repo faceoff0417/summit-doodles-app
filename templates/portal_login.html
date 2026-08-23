@@ -1,0 +1,28 @@
+{% extends "public_shell.html" %}
+{% block title %}Customer Portal -- Summit Doodles{% endblock %}
+{% block pubcontent %}
+<div class="page-head" style="display:block;">
+  <h1 style="font-size:26px;">Customer Portal</h1>
+  <div class="sub">Already reserved a puppy with us? Enter the email you used and we'll take you straight to your portal.</div>
+</div>
+
+{% if matches %}
+<div class="card card-pad" style="margin-bottom:20px;">
+  <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">We found more than one reservation for that email -- pick the one you'd like to open:</p>
+  <div style="display:flex; flex-direction:column; gap:8px;">
+    {% for m in matches %}
+      <a class="card card-pad" href="{{ url_for('portal', token=m['portal_token']) }}" style="display:flex; align-items:center; justify-content:space-between;">
+        <span style="font-size:13.5px; font-weight:700;">{{ m['puppy_name'] }}</span>
+        <span class="hint">{{ m['litter_name'] }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<form method="post" class="card card-pad" style="max-width:440px;">
+  <div class="field"><label>Email address</label><input type="email" name="email" required autofocus placeholder="you@email.com"></div>
+  <button class="btn btn-primary btn-block" type="submit">Open my portal</button>
+</form>
+<p class="hint" style="margin-top:14px;">Can't find your reservation? <a href="{{ url_for('contact') }}">Contact us</a> and we'll help you out.</p>
+{% endif %}
+{% endblock %}

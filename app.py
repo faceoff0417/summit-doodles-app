@@ -1234,6 +1234,27 @@ def reservation_message_new(res_id):
 
 
 # ------------------------------------------------------------ customer portal --
+@app.route("/portal-login", methods=["GET", "POST"])
+def portal_login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        conn = get_db()
+        matches = conn.execute("""
+            SELECT r.portal_token, p.name as puppy_name, l.litter_name
+            FROM reservations r JOIN puppies p ON p.id = r.puppy_id JOIN litters l ON l.id = p.litter_id
+            WHERE lower(r.buyer_email) = ?
+            ORDER BY r.created_at DESC
+        """, (email,)).fetchall()
+        conn.close()
+        if not matches:
+            flash("We couldn't find a reservation with that email. Please contact us and we'll help you out.", "error")
+            return redirect(url_for("portal_login"))
+        if len(matches) == 1:
+            return redirect(url_for("portal", token=matches[0]["portal_token"]))
+        return render_template("portal_login.html", pub_active="portal_login", matches=matches)
+    return render_template("portal_login.html", pub_active="portal_login", matches=None)
+
+
 @app.route("/portal/<token>")
 def portal(token):
     conn = get_db()
