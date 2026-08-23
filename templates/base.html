@@ -11,5 +11,31 @@
 </head>
 <body>
 {% block body %}{% endblock %}
+
+<div id="lightbox-overlay" class="lightbox-overlay" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+  <button type="button" class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">&times;</button>
+</div>
+<script>
+  // Click-to-enlarge for dog/puppy photos: any <img class="zoomable"> opens
+  // full-size in this one shared lightbox (event delegation, so no
+  // per-image wiring needed).
+  document.addEventListener('click', function (e) {
+    var img = e.target.closest('img.zoomable');
+    if (!img) return;
+    e.preventDefault();
+    e.stopPropagation();
+    document.getElementById('lightbox-img').src = img.src;
+    document.getElementById('lightbox-overlay').classList.add('open');
+  });
+  function closeLightbox(e) {
+    if (e && e.target && e.target.id === 'lightbox-img') return;
+    document.getElementById('lightbox-overlay').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
+</script>
 </body>
 </html>

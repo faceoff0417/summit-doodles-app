@@ -23,7 +23,7 @@
   {% for d in dogs %}
     <a class="card card-pad" href="{{ url_for('dog_detail', dog_id=d['id']) }}" style="display:flex; align-items:center; gap:14px;">
       <div class="avatar" style="width:52px; height:52px; font-size:16px; background:{{ ['#6B429C','#1E73BE','#0054AA','#00AB8E'][d['id'] % 4] }};">
-        {% if d['photo_filename'] %}<img src="{{ url_for('uploaded_file', filename=d['photo_filename']) }}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">{% else %}{{ d['name'][0] }}{% endif %}
+        {% if d['photo_filename'] %}<img class="zoomable" src="{{ url_for('uploaded_file', filename=d['photo_filename']) }}" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">{% else %}{{ d['name'][0] }}{% endif %}
       </div>
       <div style="flex:1;">
         <div style="display:flex; align-items:center; gap:8px;">
