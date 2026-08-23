@@ -158,8 +158,10 @@ def logout():
 
 
 @app.route("/")
-def index():
-    return redirect(url_for("dashboard") if session.get("is_admin") else url_for("login"))
+def public_home():
+    if session.get("is_admin"):
+        return redirect(url_for("dashboard"))
+    return render_template("public_home.html", pub_active="home")
 
 
 # --------------------------------------------------------------- dashboard --
@@ -828,7 +830,7 @@ def guardian_public():
         "SELECT * FROM dogs WHERE role='Guardian Home' ORDER BY name"
     ).fetchall()
     conn.close()
-    return render_template("guardian.html", guardians=guardians)
+    return render_template("guardian.html", guardians=guardians, pub_active="guardian")
 
 
 # --------------------------------------------------------- public puppy listings --
@@ -836,7 +838,7 @@ def guardian_public():
 def puppies_public():
     conn = get_db()
     litters = conn.execute("""
-        SELECT * FROM litters WHERE status IN ('Reserving','Whelped','Expecting') ORDER BY dob IS NULL, dob DESC
+        SELECT * FROM litters WHERE status IN ('Reserving','Whelped') ORDER BY dob IS NULL, dob DESC
     """).fetchall()
     litter_puppies = {}
     for l in litters:
@@ -844,7 +846,19 @@ def puppies_public():
             "SELECT * FROM puppies WHERE litter_id=? ORDER BY status, name", (l["id"],)
         ).fetchall()
     conn.close()
-    return render_template("puppies_public.html", litters=litters, litter_puppies=litter_puppies)
+    return render_template("puppies_public.html", litters=litters, litter_puppies=litter_puppies,
+                            pub_active="puppies")
+
+
+# ----------------------------------------------------------- future litters --
+@app.route("/future-litters")
+def future_litters_public():
+    conn = get_db()
+    litters = conn.execute("""
+        SELECT * FROM litters WHERE status IN ('Planned','Expecting') ORDER BY bred_date IS NULL, bred_date
+    """).fetchall()
+    conn.close()
+    return render_template("future_litters_public.html", litters=litters, pub_active="future")
 
 
 # ------------------------------------------------------------- applications --
@@ -882,12 +896,13 @@ def apply():
     conn.close()
     puppy_choices = [PUPPY_CHOICE_LABEL.format(litter=r["litter_name"], name=r["name"],
                                                 sex=r["sex"], color=r["color"]) for r in puppy_rows]
-    return render_template("apply.html", puppy_choices=puppy_choices, today=datetime.date.today().isoformat())
+    return render_template("apply.html", puppy_choices=puppy_choices, today=datetime.date.today().isoformat(),
+                            pub_active="apply")
 
 
 @app.route("/apply/thanks")
 def apply_thanks():
-    return render_template("apply_thanks.html")
+    return render_template("apply_thanks.html", pub_active="apply")
 
 
 @app.route("/applications")
@@ -937,12 +952,12 @@ def contact():
         conn.commit()
         conn.close()
         return redirect(url_for("contact_thanks"))
-    return render_template("contact.html")
+    return render_template("contact.html", pub_active="contact")
 
 
 @app.route("/contact/thanks")
 def contact_thanks():
-    return render_template("contact_thanks.html")
+    return render_template("contact_thanks.html", pub_active="contact")
 
 
 @app.route("/contacts")

@@ -1,0 +1,20 @@
+{% extends "public_shell.html" %}
+{% block title %}Future Litters -- Summit Doodles{% endblock %}
+{% block pubcontent %}
+<h1 style="font-family:'Playfair Display',serif; font-size:26px; margin-bottom:6px;">Future Litters</h1>
+<p style="color:var(--muted); font-size:14px; margin-bottom:20px; line-height:1.6;">Planned and upcoming litters that don't have puppies born yet. Interested? <a href="{{ url_for('apply') }}">Apply</a> to join the waitlist early, or <a href="{{ url_for('contact') }}">reach out</a> with questions.</p>
+
+{% for l in litters %}
+  <div class="card card-pad" style="margin-bottom:14px;">
+    <div class="row-between">
+      <span class="pill {{ pill_class(l['status']) }}">{{ l['status'] }}</span>
+      {% if l['waitlist_count'] %}<span class="hint">{{ l['waitlist_count'] }} famil{{ 'y' if l['waitlist_count']==1 else 'ies' }} waitlisted</span>{% endif %}
+    </div>
+    <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:18px; margin-top:8px;">{{ l['litter_name'] }}</div>
+    <div style="font-size:12.5px; color:var(--muted); margin-top:2px;">{{ l['breed'] }}</div>
+    {% if l['go_home_date'] %}<div style="font-size:12.5px; color:var(--muted); margin-top:2px;">Expected go-home: {{ l['go_home_date'] | dateread }}</div>{% endif %}
+  </div>
+{% else %}
+  <div class="card card-pad" style="color:var(--muted); text-align:center;">Nothing planned right now -- check back soon, or apply to be notified first.</div>
+{% endfor %}
+{% endblock %}

@@ -1,9 +1,9 @@
-{% extends "public_base.html" %}
+{% extends "public_shell.html" %}
 {% block title %}Available Puppies -- Summit Doodles{% endblock %}
-{% block content %}
-<div class="public-header" style="padding-top:0;">
-  <h1>Available Puppies</h1>
-  <p>Meet our current and upcoming litters. Ready to bring one home? <a href="{{ url_for('apply') }}">Start an application</a> -- or learn about our <a href="{{ url_for('guardian_public') }}">Home Guardian Program</a>.</p>
+{% block pubcontent %}
+<div class="page-head" style="display:block;">
+  <h1 style="font-size:26px;">Available Puppies</h1>
+  <div class="sub">Meet our current litters. Ready to bring one home? <a href="{{ url_for('apply') }}">Start an application</a> -- or learn about our <a href="{{ url_for('guardian_public') }}">Home Guardian Program</a>.</div>
 </div>
 
 {% for l in litters %}

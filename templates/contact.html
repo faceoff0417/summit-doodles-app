@@ -1,9 +1,9 @@
-{% extends "public_base.html" %}
+{% extends "public_shell.html" %}
 {% block title %}Contact Us -- Summit Doodles{% endblock %}
-{% block content %}
-<div class="public-header" style="padding-top:0;">
-  <h1>Contact Us</h1>
-  <p>Questions about a litter, the Guardian Program, or anything else -- we'd love to hear from you.</p>
+{% block pubcontent %}
+<div class="page-head" style="display:block;">
+  <h1 style="font-size:26px;">Contact Us</h1>
+  <div class="sub">Questions about a litter, the Guardian Program, or anything else -- we'd love to hear from you.</div>
 </div>
 <form method="post" class="card card-pad">
   <div class="field-row">
@@ -26,3 +26,4 @@
   <button class="btn btn-primary btn-block" type="submit">Send message</button>
 </form>
 {% endblock %}
+
