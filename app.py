@@ -164,6 +164,11 @@ def public_home():
     return render_template("public_home.html", pub_active="home")
 
 
+@app.route("/about")
+def about_public():
+    return render_template("about.html", pub_active="about")
+
+
 # --------------------------------------------------------------- dashboard --
 @app.route("/dashboard")
 @login_required
