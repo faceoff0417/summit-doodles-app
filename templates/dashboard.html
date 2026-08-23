@@ -15,6 +15,30 @@
   <div class="card kpi"><div class="eyebrow">Deposits Held</div><div class="num" style="color:var(--blue-accent);">{{ deposits_held | money }}</div></div>
 </div>
 
+<div class="eyebrow" style="margin-bottom:8px;">Fiscal Year to Date</div>
+<div class="grid-4" style="margin-bottom:26px;">
+  <div class="card kpi"><div class="eyebrow">Puppies Sold YTD</div><div class="num" style="color:var(--purple);">{{ sales_ytd.sold }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Gross Revenue YTD</div><div class="num" style="color:var(--blue-deep);">{{ sales_ytd.revenue | money }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Gross Profit YTD</div><div class="num" style="color:var(--green);">{{ sales_ytd.profit | money }}</div></div>
+  <div class="card kpi">
+    <div class="eyebrow">Avg Revenue / Profit per Dog</div>
+    <div class="num" style="color:var(--blue-accent); font-size:22px;">{{ sales_ytd.avg_revenue | money }}</div>
+    <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ sales_ytd.avg_profit | money }} avg profit</div>
+  </div>
+</div>
+
+<div class="eyebrow" style="margin-bottom:8px;">Lifetime</div>
+<div class="grid-4" style="margin-bottom:26px;">
+  <div class="card kpi"><div class="eyebrow">Puppies Sold Lifetime</div><div class="num" style="color:var(--purple);">{{ sales_lifetime.sold }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Gross Revenue Lifetime</div><div class="num" style="color:var(--blue-deep);">{{ sales_lifetime.revenue | money }}</div></div>
+  <div class="card kpi"><div class="eyebrow">Gross Profit Lifetime</div><div class="num" style="color:var(--green);">{{ sales_lifetime.profit | money }}</div></div>
+  <div class="card kpi">
+    <div class="eyebrow">Avg Revenue / Profit per Dog</div>
+    <div class="num" style="color:var(--blue-accent); font-size:22px;">{{ sales_lifetime.avg_revenue | money }}</div>
+    <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ sales_lifetime.avg_profit | money }} avg profit</div>
+  </div>
+</div>
+
 <div class="grid-2">
   <div class="stack">
     <div class="row-between">

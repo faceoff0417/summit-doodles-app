@@ -237,11 +237,24 @@ def dashboard():
         "WHERE r.pickup_date IS NOT NULL ORDER BY r.pickup_date ASC LIMIT 4"
     ).fetchall()
     conn.close()
+
+    # --- sales metrics: placeholders for now (Tara will provide updated
+    # totals until this is wired up to compute automatically off actual
+    # sold/delivered puppies + per-puppy revenue and cost tracking). ---
+    def with_averages(sold, revenue, profit):
+        return dict(sold=sold, revenue=revenue, profit=profit,
+                     avg_revenue=(revenue / sold) if sold else 0,
+                     avg_profit=(profit / sold) if sold else 0)
+
+    sales_ytd = with_averages(sold=40, revenue=140000, profit=50000)
+    sales_lifetime = with_averages(sold=200, revenue=680000, profit=242857)
+
     return render_template("dashboard.html", nav_active="dashboard",
                             active_litters=active_litters, available_puppies=available_puppies,
                             open_apps=open_apps, deposits_held=deposits_held,
                             recent_apps=recent_apps, recent_contacts=recent_contacts,
-                            litters=litters, upcoming=upcoming)
+                            litters=litters, upcoming=upcoming,
+                            sales_ytd=sales_ytd, sales_lifetime=sales_lifetime)
 
 
 # --------------------------------------------------------------------- dogs --
