@@ -99,6 +99,19 @@ def set_setting(key, value):
     conn.close()
 
 
+def guardian_lifetime_count():
+    # Manual baseline (older placements this app never tracked) + every dog
+    # that has actually transitioned into the Guardian Program since --
+    # stamped automatically in dog_edit() below, so this grows on its own.
+    baseline = int(get_setting("guardian_lifetime_baseline", "12"))
+    conn = get_db()
+    new_since = conn.execute(
+        "SELECT COUNT(*) c FROM dogs WHERE guardian_placed_at IS NOT NULL"
+    ).fetchone()["c"]
+    conn.close()
+    return baseline + new_since
+
+
 def save_upload(file_storage, subdir, id_prefix):
     if not file_storage or not file_storage.filename:
         return None
@@ -184,7 +197,8 @@ def logout():
 def public_home():
     if session.get("is_admin"):
         return redirect(url_for("dashboard"))
-    return render_template("public_home.html", pub_active="home")
+    return render_template("public_home.html", pub_active="home",
+                            guardian_lifetime=guardian_lifetime_count())
 
 
 @app.route("/about")
@@ -320,10 +334,18 @@ def dog_edit(dog_id):
     if not dog:
         abort(404)
     if request.method == "POST":
+        new_guardian_family = request.form.get("guardian_family")
+        # First time this dog gets placed with a guardian family, stamp it --
+        # this is what drives the public "Guardian Program lifetime" count.
+        # Never overwritten once set, so later edits to the family name (or
+        # a later retirement) don't lose the original placement date.
+        guardian_placed_at = dog["guardian_placed_at"]
+        if not guardian_placed_at and new_guardian_family and new_guardian_family.strip():
+            guardian_placed_at = datetime.datetime.now().isoformat()
         conn.execute("""
             UPDATE dogs SET name=?, sex=?, role=?, breed=?, color=?, coat=?, dob=?, weight_lbs=?,
                 akc_number=?, microchip=?, sire_name=?, dam_name=?, bio=?, hips=?, elbows=?, eic=?,
-                dm=?, vwd=?, pra=?, guardian_family=?
+                dm=?, vwd=?, pra=?, guardian_family=?, guardian_placed_at=?
             WHERE id=?
         """, (request.form["name"], request.form["sex"], request.form["role"],
               request.form.get("breed"), request.form.get("color"), request.form.get("coat"),
@@ -332,7 +354,7 @@ def dog_edit(dog_id):
               request.form.get("sire_name"), request.form.get("dam_name"), request.form.get("bio"),
               request.form.get("hips"), request.form.get("elbows"), request.form.get("eic"),
               request.form.get("dm"), request.form.get("vwd"), request.form.get("pra"),
-              request.form.get("guardian_family"), dog_id))
+              new_guardian_family, guardian_placed_at, dog_id))
         if "photo" in request.files:
             fn = save_upload(request.files["photo"], "dogs", f"dog{dog_id}")
             if fn:

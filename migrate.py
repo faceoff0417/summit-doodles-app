@@ -99,6 +99,7 @@ NEW_COLUMNS = [
     ("reservations", "training_notes", "TEXT"),
     ("reservations", "registration_status", "TEXT NOT NULL DEFAULT 'Pending'"),
     ("reservations", "go_home_sent", "INTEGER DEFAULT 0"),
+    ("dogs", "guardian_placed_at", "TEXT"),
 ]
 
 
