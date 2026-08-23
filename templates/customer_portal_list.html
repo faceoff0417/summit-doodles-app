@@ -1,0 +1,31 @@
+{% extends "admin_base.html" %}
+{% block title %}Customer Portal -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Customer Portal</h1><div class="sub">{{ accounts | length }} customer portal account{{ '' if accounts|length == 1 else 's' }}</div></div>
+  <a class="btn btn-primary" href="{{ url_for('reservation_new') }}">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5 V19 M5 12 H19"/></svg>
+    Add customer portal account
+  </a>
+</div>
+
+<div class="stack">
+  {% for a in accounts %}
+    <div class="card card-pad" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+      <div class="avatar" style="width:44px; height:44px; font-size:14px; background:var(--purple);">{{ a['buyer_name'][0] }}</div>
+      <div style="flex:1; min-width:200px;">
+        <div style="font-weight:800; font-size:14px;">{{ a['buyer_name'] }}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ a['buyer_email'] }}{% if a['buyer_phone'] %} &middot; {{ a['buyer_phone'] }}{% endif %}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">{{ a['puppy_name'] }} &middot; {{ a['litter_name'] }}</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('portal', token=a['portal_token']) }}" target="_blank" rel="noopener">Open portal &#8599;</a>
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('customer_portal_edit', res_id=a['id']) }}">Manage</a>
+        <a class="btn btn-secondary btn-sm" href="{{ url_for('reservation_detail', res_id=a['id']) }}">Full reservation</a>
+      </div>
+    </div>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">No customer portal accounts yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "admin_base.html" %}
+{% block title %}Manage Portal Account -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ r['buyer_name'] }}'s Portal Account</h1></div>
+
+<div class="card card-pad" style="max-width:640px; margin-bottom:20px;">
+  <div class="eyebrow" style="margin-bottom:6px;">Puppy</div>
+  <div style="font-size:13.5px; font-weight:700; margin-bottom:16px;">{{ r['puppy_name'] }} &middot; {{ r['litter_name'] }}</div>
+
+  <div class="eyebrow" style="margin-bottom:6px;">Portal link</div>
+  <div style="font-size:13px; word-break:break-all; margin-bottom:10px;">
+    <a href="{{ url_for('portal', token=r['portal_token']) }}" target="_blank" rel="noopener">{{ request.host_url }}portal/{{ r['portal_token'] }}</a>
+  </div>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('portal', token=r['portal_token']) }}" target="_blank" rel="noopener">Open portal &#8599;</a>
+    <form method="post" action="{{ url_for('customer_portal_regenerate_token', res_id=r['id']) }}"
+          onsubmit="return confirm('Generate a new portal link? The old link will stop working immediately.');">
+      <button class="btn btn-secondary btn-sm" type="submit">Regenerate link</button>
+    </form>
+  </div>
+</div>
+
+<form method="post" class="card card-pad" style="max-width:640px; margin-bottom:20px;">
+  <div class="eyebrow" style="margin-bottom:10px;">Customer info</div>
+  <div class="field-row">
+    <div class="field"><label>Name</label><input type="text" name="buyer_name" required value="{{ r['buyer_name'] }}"></div>
+    <div class="field"><label>Email (their portal login)</label><input type="email" name="buyer_email" required value="{{ r['buyer_email'] }}"></div>
+  </div>
+  <div class="field"><label>Phone</label><input type="tel" name="buyer_phone" value="{{ r['buyer_phone'] or '' }}"></div>
+  <button class="btn btn-primary" type="submit">Save changes</button>
+</form>
+
+<div class="card card-pad" style="max-width:640px; border-color:var(--red, #d33);">
+  <div class="eyebrow" style="margin-bottom:6px; color:var(--red, #d33);">Danger zone</div>
+  <p style="font-size:12.5px; color:var(--muted); margin-bottom:12px;">
+    Deleting this account removes the customer's portal access, their photo updates, and their messages. Their
+    puppy will go back to Available (unless already marked Sold). This can't be undone.
+  </p>
+  <form method="post" action="{{ url_for('customer_portal_delete', res_id=r['id']) }}"
+        onsubmit="return confirm('Delete this customer\'s portal account? This removes their portal access, updates, and messages. This cannot be undone.');">
+    <button class="btn btn-secondary btn-sm" type="submit" style="color:var(--red, #d33); border-color:var(--red, #d33);">Delete portal account</button>
+  </form>
+</div>
+
+<div style="margin-top:16px;">
+  <a class="hint" href="{{ url_for('customer_portal_list') }}">&larr; Back to Customer Portal</a>
+</div>
+{% endblock %}

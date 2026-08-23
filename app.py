@@ -1233,6 +1233,80 @@ def reservation_message_new(res_id):
     return redirect(url_for("reservation_detail", res_id=res_id))
 
 
+# --------------------------------------------- customer portal accounts (admin) --
+@app.route("/customer-portal")
+@login_required
+def customer_portal_list():
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT r.*, p.name as puppy_name, l.litter_name
+        FROM reservations r
+        JOIN puppies p ON p.id = r.puppy_id
+        JOIN litters l ON l.id = p.litter_id
+        ORDER BY r.created_at DESC
+    """).fetchall()
+    conn.close()
+    return render_template("customer_portal_list.html", nav_active="portal_accounts", accounts=rows)
+
+
+@app.route("/customer-portal/<int:res_id>/edit", methods=["GET", "POST"])
+@login_required
+def customer_portal_edit(res_id):
+    conn = get_db()
+    if request.method == "POST":
+        f = request.form
+        conn.execute(
+            "UPDATE reservations SET buyer_name=?, buyer_email=?, buyer_phone=? WHERE id=?",
+            (f["buyer_name"], f["buyer_email"], f.get("buyer_phone"), res_id),
+        )
+        conn.commit()
+        conn.close()
+        flash("Customer portal account updated.", "success")
+        return redirect(url_for("customer_portal_edit", res_id=res_id))
+    r = conn.execute("""
+        SELECT r.*, p.name as puppy_name, l.litter_name
+        FROM reservations r JOIN puppies p ON p.id = r.puppy_id JOIN litters l ON l.id = p.litter_id
+        WHERE r.id = ?
+    """, (res_id,)).fetchone()
+    conn.close()
+    if not r:
+        abort(404)
+    return render_template("customer_portal_edit.html", nav_active="portal_accounts", r=r)
+
+
+@app.route("/customer-portal/<int:res_id>/regenerate-token", methods=["POST"])
+@login_required
+def customer_portal_regenerate_token(res_id):
+    conn = get_db()
+    conn.execute("UPDATE reservations SET portal_token=? WHERE id=?", (new_token(), res_id))
+    conn.commit()
+    conn.close()
+    flash("New portal link generated -- the old link no longer works.", "success")
+    return redirect(url_for("customer_portal_edit", res_id=res_id))
+
+
+@app.route("/customer-portal/<int:res_id>/delete", methods=["POST"])
+@login_required
+def customer_portal_delete(res_id):
+    conn = get_db()
+    r = conn.execute("SELECT puppy_id FROM reservations WHERE id=?", (res_id,)).fetchone()
+    if r:
+        # updates/messages/invoices cascade via FK; notes use the generic
+        # entity_type/entity_id pattern so they need a manual cleanup.
+        conn.execute("DELETE FROM notes WHERE entity_type='reservation' AND entity_id=?", (res_id,))
+        conn.execute("DELETE FROM reservations WHERE id=?", (res_id,))
+        # Free the puppy back up -- but don't touch it if it's already marked
+        # Sold through some other flow.
+        conn.execute(
+            "UPDATE puppies SET status='Available' WHERE id=? AND status='Reserved'",
+            (r["puppy_id"],),
+        )
+        conn.commit()
+        flash("Customer portal account deleted.", "info")
+    conn.close()
+    return redirect(url_for("customer_portal_list"))
+
+
 # ------------------------------------------------------------ customer portal --
 @app.route("/portal-login", methods=["GET", "POST"])
 def portal_login():
