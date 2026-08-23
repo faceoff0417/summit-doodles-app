@@ -827,6 +827,16 @@ def campaign_mark_sent(campaign_id):
     return redirect(url_for("marketing"))
 
 
+# --------------------------------------------------------------- our dogs --
+@app.route("/our-dogs")
+def our_dogs_public():
+    conn = get_db()
+    studs = conn.execute("SELECT * FROM dogs WHERE role='Stud' ORDER BY name").fetchall()
+    dams = conn.execute("SELECT * FROM dogs WHERE role='Dam' ORDER BY name").fetchall()
+    conn.close()
+    return render_template("our_dogs.html", studs=studs, dams=dams, pub_active="our_dogs")
+
+
 # ------------------------------------------------------------- guardian program --
 @app.route("/guardian")
 def guardian_public():
@@ -836,6 +846,12 @@ def guardian_public():
     ).fetchall()
     conn.close()
     return render_template("guardian.html", guardians=guardians, pub_active="guardian")
+
+
+# --------------------------------------------------------- pricing & training --
+@app.route("/pricing-training")
+def pricing_public():
+    return render_template("pricing.html", pub_active="pricing")
 
 
 # --------------------------------------------------------- public puppy listings --
