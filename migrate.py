@@ -84,6 +84,10 @@ NEW_TABLES_SQL = [
         sent_at         TEXT,
         created_at      TEXT NOT NULL DEFAULT (datetime('now'))
     )""",
+    """CREATE TABLE IF NOT EXISTS site_settings (
+        key             TEXT PRIMARY KEY,
+        value           TEXT
+    )""",
 ]
 
 NEW_COLUMNS = [

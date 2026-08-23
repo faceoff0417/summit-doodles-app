@@ -1,0 +1,25 @@
+{% extends "admin_base.html" %}
+{% block title %}Edit About Page -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Edit About Page</h1></div>
+
+<div class="card card-pad" style="max-width:560px;">
+  <div class="eyebrow" style="margin-bottom:10px;">Current photo</div>
+  <div class="card" style="overflow:hidden; margin-bottom:16px;">
+    {% if about_photo %}
+      <img src="{{ url_for('uploaded_file', filename=about_photo) }}" alt="Family photo" style="width:100%; display:block;">
+    {% else %}
+      <img src="{{ url_for('static', filename='img/about/family.jpg') }}" alt="Family photo" style="width:100%; display:block;">
+    {% endif %}
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="field"><label>Replace photo</label><input type="file" name="photo" accept="image/*" required></div>
+    <div style="display:flex; gap:10px; margin-top:6px;">
+      <button class="btn btn-primary" type="submit">Save photo</button>
+      <a class="btn btn-secondary" href="{{ url_for('about_public') }}" target="_blank" rel="noopener">View About page</a>
+    </div>
+  </form>
+  <p class="hint" style="margin-top:14px;">This replaces the family photo shown at the top of the public About page. The rest of the About page text is fixed content.</p>
+</div>
+{% endblock %}

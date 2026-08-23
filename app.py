@@ -7,6 +7,7 @@ from flask import (Flask, render_template, request, redirect, url_for, session,
 from werkzeug.utils import secure_filename
 
 from db import get_db, init_db, new_token, DATA_DIR, INSTANCE_DIR, DB_PATH
+import migrate
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # DATA_DIR (from db.py) points at a persistent disk's mount path when one is
@@ -26,6 +27,10 @@ app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB uploads
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 if not os.path.exists(DB_PATH):
     init_db()
+# --- always bring an existing database up to the latest schema too, so a
+# new table/column added in a later release just appears -- no manual
+# migration step needed on redeploy. Every statement is idempotent. ---
+migrate.run()
 
 # --- secret key: persisted alongside the database so sessions survive a
 # restart/redeploy (and everyone using the app isn't logged out each time) ---
@@ -74,6 +79,24 @@ def inject_counts():
         a, c = open_counts()
         return dict(open_application_count=a, open_contact_count=c)
     return dict(open_application_count=0, open_contact_count=0)
+
+
+def get_setting(key, default=None):
+    conn = get_db()
+    row = conn.execute("SELECT value FROM site_settings WHERE key=?", (key,)).fetchone()
+    conn.close()
+    return row["value"] if row else default
+
+
+def set_setting(key, value):
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO site_settings (key, value) VALUES (?, ?) "
+        "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        (key, value),
+    )
+    conn.commit()
+    conn.close()
 
 
 def save_upload(file_storage, subdir, id_prefix):
@@ -166,7 +189,21 @@ def public_home():
 
 @app.route("/about")
 def about_public():
-    return render_template("about.html", pub_active="about")
+    about_photo = get_setting("about_photo")
+    return render_template("about.html", pub_active="about", about_photo=about_photo)
+
+
+@app.route("/about/edit", methods=["GET", "POST"])
+@login_required
+def about_edit():
+    if request.method == "POST":
+        fn = save_upload(request.files.get("photo"), "about", "about-family")
+        if fn:
+            set_setting("about_photo", fn)
+            flash("About page photo updated.", "success")
+        return redirect(url_for("about_edit"))
+    about_photo = get_setting("about_photo")
+    return render_template("about_edit.html", nav_active="about", about_photo=about_photo)
 
 
 # --------------------------------------------------------------- dashboard --

@@ -6,7 +6,11 @@
 </div>
 
 <div class="card" style="overflow:hidden; margin-bottom:20px;">
-  <img src="{{ url_for('static', filename='img/about/family.jpg') }}" alt="The Summit Doodles family" style="width:100%; display:block;">
+  {% if about_photo %}
+    <img src="{{ url_for('uploaded_file', filename=about_photo) }}" alt="The Summit Doodles family" style="width:100%; display:block;">
+  {% else %}
+    <img src="{{ url_for('static', filename='img/about/family.jpg') }}" alt="The Summit Doodles family" style="width:100%; display:block;">
+  {% endif %}
 </div>
 
 <div class="card card-pad" style="margin-bottom:20px;">
