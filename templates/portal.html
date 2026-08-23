@@ -33,16 +33,33 @@
 </div>
 
 <h2 style="font-size:16px; margin-bottom:10px;">Photos &amp; Growth Updates</h2>
+
+{% if photo_updates %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(112px, 1fr)); gap:10px; margin-bottom:14px;">
+  {% for u in photo_updates %}
+    <div class="card" style="overflow:hidden; padding:0;">
+      <div style="width:100%; aspect-ratio:1; overflow:hidden; background:var(--purple-tint);">
+        <img src="{{ url_for('uploaded_file', filename=u['photo_filename']) }}" style="width:100%; height:100%; object-fit:cover; display:block;">
+      </div>
+      <div style="padding:8px;">
+        <div style="font-size:11px; line-height:1.4;">{{ u['body'] }}</div>
+        <div class="hint" style="margin-top:2px; font-size:10px;">{{ u['created_at'][:10] }}</div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <div class="stack" style="margin-bottom:24px;">
-  {% for u in updates %}
+  {% for u in text_updates %}
     <div class="card card-pad">
-      {% if u['photo_filename'] %}<div style="width:100%; border-radius:12px; overflow:hidden; margin-bottom:10px;"><img src="{{ url_for('uploaded_file', filename=u['photo_filename']) }}" style="width:100%; display:block;"></div>{% endif %}
       <div style="font-size:13px;">{{ u['body'] }}</div>
       <div class="hint">{{ u['created_at'][:10] }}</div>
     </div>
-  {% else %}
-    <div class="card card-pad" style="color:var(--muted); font-size:13px;">No updates yet -- check back soon!</div>
   {% endfor %}
+  {% if not updates %}
+    <div class="card card-pad" style="color:var(--muted); font-size:13px;">No updates yet -- check back soon!</div>
+  {% endif %}
 </div>
 
 <h2 style="font-size:16px; margin-bottom:10px;">Payment Status</h2>

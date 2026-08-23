@@ -1159,7 +1159,10 @@ def portal(token):
             next_bday = dob.replace(year=today.year + 1)
         lifetime = dict(age=age_str(r["litter_dob"]), next_birthday=next_bday,
                          is_home=(days_left is not None and days_left <= 0))
-    return render_template("portal.html", r=r, updates=updates, messages=messages, days_left=days_left,
+    photo_updates = [u for u in updates if u["photo_filename"]]
+    text_updates = [u for u in updates if not u["photo_filename"]]
+    return render_template("portal.html", r=r, updates=updates, photo_updates=photo_updates,
+                            text_updates=text_updates, messages=messages, days_left=days_left,
                             token=token, lifetime=lifetime)
 
 
