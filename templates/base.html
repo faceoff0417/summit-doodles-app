@@ -8,6 +8,16 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='img/logo-icon.png') }}">
+
+  <!-- Installable "app-like" experience on mobile (Add to Home Screen /
+       Install app) -- no App Store or Play Store listing involved. -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#0054AA">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Summit Doodles">
+  <meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 {% block body %}{% endblock %}
@@ -36,6 +46,12 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeLightbox();
   });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    });
+  }
 </script>
 </body>
 </html>

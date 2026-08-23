@@ -1443,6 +1443,16 @@ def uploaded_file(filename):
     return send_from_directory(UPLOAD_DIR, filename)
 
 
+@app.route("/sw.js")
+def service_worker():
+    # Served from the root (not /static/sw.js) so its default scope covers
+    # the whole site -- required for it to control pages outside /static/.
+    resp = send_from_directory(os.path.join(BASE_DIR, "static"), "sw.js")
+    resp.headers["Service-Worker-Allowed"] = "/"
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 if __name__ == "__main__":
     # Database/upload-dir setup already happened above at import time (so it
     # also runs under gunicorn); this block only starts the local dev server.
