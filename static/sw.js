@@ -4,7 +4,11 @@
 // puppy listings, etc.) -- those always come from the network, so nothing
 // ever goes stale. Only the static app shell (logo/icons/css) is
 // cache-first, since those rarely change and it's safe to reuse them.
-const SHELL_CACHE = "summit-doodles-shell-v1";
+//
+// IMPORTANT: whenever style.css, the logo, or an icon changes, bump this
+// version string -- otherwise installed apps keep serving the old cached
+// file indefinitely, even after a fresh deploy.
+const SHELL_CACHE = "summit-doodles-shell-v2";
 const SHELL_ASSETS = [
   "/static/css/style.css",
   "/static/img/logo-full.png",

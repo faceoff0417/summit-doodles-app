@@ -147,7 +147,9 @@ tr:hover td { background:#FBFAFD; }
 @media (max-width: 880px) {
   .shell { flex-direction:column; }
   .sidebar { width:100%; height:auto; position:relative; flex-direction:row; overflow-x:auto; padding:12px; align-items:center; }
-  .brand { padding:6px 14px 6px 4px; }
+  .brand { flex-direction:column; gap:2px; padding:4px 10px; flex-shrink:0; }
+  .brand img { width:26px; }
+  .brand-name { font-size:11px; white-space:nowrap; }
   .sidebar-spacer { display:none; }
   .navitem { flex-direction:column; gap:4px; padding:8px 12px; font-size:11px; }
   .main { padding:20px; }
