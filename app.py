@@ -1120,6 +1120,35 @@ def reservation_update_new(res_id):
     return redirect(url_for("reservation_detail", res_id=res_id))
 
 
+def _delete_update(update_id, reservation_id):
+    """Delete an update row (and its photo file, if any) -- shared by the
+    breeder-side and portal-side delete routes. Caller has already verified
+    the update belongs to the given reservation."""
+    conn = get_db()
+    row = conn.execute("SELECT photo_filename FROM updates WHERE id=? AND reservation_id=?",
+                        (update_id, reservation_id)).fetchone()
+    if row:
+        if row["photo_filename"]:
+            path = os.path.join(UPLOAD_DIR, row["photo_filename"])
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+        conn.execute("DELETE FROM updates WHERE id=? AND reservation_id=?", (update_id, reservation_id))
+        conn.commit()
+    conn.close()
+    return bool(row)
+
+
+@app.route("/reservations/<int:res_id>/updates/<int:update_id>/delete", methods=["POST"])
+@login_required
+def reservation_update_delete(res_id, update_id):
+    _delete_update(update_id, res_id)
+    flash("Update removed.", "info")
+    return redirect(url_for("reservation_detail", res_id=res_id))
+
+
 @app.route("/reservations/<int:res_id>/messages/new", methods=["POST"])
 @login_required
 def reservation_message_new(res_id):
@@ -1164,6 +1193,17 @@ def portal(token):
     return render_template("portal.html", r=r, updates=updates, photo_updates=photo_updates,
                             text_updates=text_updates, messages=messages, days_left=days_left,
                             token=token, lifetime=lifetime)
+
+
+@app.route("/portal/<token>/updates/<int:update_id>/delete", methods=["POST"])
+def portal_update_delete(token, update_id):
+    conn = get_db()
+    r = conn.execute("SELECT id FROM reservations WHERE portal_token=?", (token,)).fetchone()
+    conn.close()
+    if not r:
+        abort(404)
+    _delete_update(update_id, r["id"])
+    return redirect(url_for("portal", token=token))
 
 
 @app.route("/portal/<token>/messages/new", methods=["POST"])

@@ -133,9 +133,17 @@
       {% if updates %}
       <div class="stack" style="margin-top:16px;">
         {% for u in updates %}
-        <div style="border-top:1px solid var(--line); padding-top:10px;">
-          <div style="font-size:12.5px;">{{ u['body'] }}</div>
-          <div class="hint">{{ u['created_at'][:16] }}</div>
+        <div style="border-top:1px solid var(--line); padding-top:10px; display:flex; gap:10px; align-items:flex-start;">
+          {% if u['photo_filename'] %}
+            <img src="{{ url_for('uploaded_file', filename=u['photo_filename']) }}" style="width:36px; height:36px; border-radius:8px; object-fit:cover; flex-shrink:0;">
+          {% endif %}
+          <div style="flex:1;">
+            <div style="font-size:12.5px;">{{ u['body'] }}</div>
+            <div class="hint">{{ u['created_at'][:16] }}</div>
+          </div>
+          <form method="post" action="{{ url_for('reservation_update_delete', res_id=r['id'], update_id=u['id']) }}" onsubmit="return confirm('Remove this update?');">
+            <button type="submit" style="background:none; border:none; color:var(--faint); cursor:pointer; padding:2px; font-size:12px;">Delete</button>
+          </form>
         </div>
         {% endfor %}
       </div>
