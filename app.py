@@ -842,6 +842,78 @@ def business():
                             expense_rows=expense_rows)
 
 
+def _fmt_metric(value, kind):
+    if kind == "money":
+        return f"${value:,.0f}"
+    if kind == "percent":
+        return f"{value:.1f}%"
+    if kind == "decimal1":
+        return f"{value:.1f}"
+    return f"{value:g}"  # plain number -- 5 not 5.0
+
+
+def _metric_row(label, actual, target, kind):
+    diff = actual - target
+    return dict(
+        label=label,
+        actual=_fmt_metric(actual, kind),
+        target=_fmt_metric(target, kind),
+        variance=("(" + _fmt_metric(abs(diff), kind) + ")") if diff < 0 else _fmt_metric(diff, kind),
+        variance_positive=diff >= 0,
+    )
+
+
+# Lifetime actuals are placeholders for now -- same pattern as the dashboard's
+# YTD/Lifetime sales metrics. Tara/Tom can send updated numbers anytime;
+# targets are the goals they've set for the business.
+BUSINESS_METRICS = [
+    ("Financial", [
+        ("Average Puppy Selling Price", 3250, 3000, "money"),
+        ("Revenue per Litter", 13000, 12500, "money"),
+        ("Gross Profit per Litter", 7800, 7500, "money"),
+        ("Revenue per Puppy Born", 2000, 2200, "money"),
+        ("Gross Profit per Puppy", 2000, 2000, "money"),
+        ("Revenue per Puppy -- Female", 3500, 3000, "money"),
+        ("Revenue per Puppy -- Male", 2500, 2500, "money"),
+        ("Gross Profit per Puppy -- Female", 2100, 2000, "money"),
+        ("Gross Profit per Puppy -- Male", 1500, 1500, "money"),
+        ("Cost per Puppy", 750, 750, "money"),
+        ("Veterinary Cost per Puppy", 500, 500, "money"),
+        ("Customer Acquisition Cost", 500, 500, "money"),
+        ("Deposit Conversion Rate", 50.0, 40.0, "percent"),
+        ("Waitlist Conversion Rate", 50.0, 60.0, "percent"),
+        ("Litters per Year", 5, 5, "int"),
+    ]),
+    ("Demand", [
+        ("Waitlist Size (# of Litters)", 1, 1, "int"),
+        ("Months of Demand", 4.2, 4, "decimal1"),
+        ("Pre-Birth Placement %", 50.0, 50.0, "percent"),
+    ]),
+    ("Breeding", [
+        ("Average Litter Size", 5, 5, "int"),
+        ("Live Birth Rate", 98.0, 95.0, "percent"),
+        ("Puppy Survival Rate", 98.0, 95.0, "percent"),
+        ("Successful Pregnancy Rate", 80.0, 85.0, "percent"),
+        ("Dam Litter Frequency/Year", 1.5, 1.0, "decimal1"),
+    ]),
+    ("Health", [
+        ("Genetic Testing Compliance", 98.0, 100.0, "percent"),
+        ("Health Screening Compliance", 98.0, 100.0, "percent"),
+    ]),
+]
+
+
+@app.route("/business/metrics")
+@login_required
+def business_metrics():
+    sections = [
+        dict(name=name, rows=[_metric_row(label, actual, target, kind)
+                               for label, actual, target, kind in rows])
+        for name, rows in BUSINESS_METRICS
+    ]
+    return render_template("business_metrics.html", nav_active="business_metrics", sections=sections)
+
+
 @app.route("/expenses/new", methods=["POST"])
 @login_required
 def expense_new():

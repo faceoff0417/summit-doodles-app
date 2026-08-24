@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %}
+{% block title %}Business Metrics -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Business Metrics</h1><div class="sub">Financial, demand, breeding &amp; health metrics against target.</div></div>
+</div>
+
+<div class="card card-pad" style="margin-bottom:20px; font-size:12px; color:var(--muted); line-height:1.6;">
+  "Actuals -- Lifetime" are placeholder figures for now (send updated numbers anytime and they'll be swapped in).
+  Variance is Actual minus Target -- green means at or ahead of target, red means behind.
+</div>
+
+{% for section in sections %}
+  <h2 style="font-size:16px; margin-bottom:10px;">{{ section.name }}</h2>
+  <div class="card" style="overflow-x:auto; margin-bottom:24px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Actuals -- Lifetime (Placeholder)</th>
+          <th>Target</th>
+          <th>Variance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in section.rows %}
+          <tr>
+            <td style="font-weight:700;">{{ r.label }}</td>
+            <td>{{ r.actual }}</td>
+            <td>{{ r.target }}</td>
+            <td style="font-weight:700; color:{{ 'var(--green)' if r.variance_positive else 'var(--red)' }};">{{ r.variance }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endfor %}
+{% endblock %}
