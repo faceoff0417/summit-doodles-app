@@ -13,11 +13,14 @@
 {% for section in sections %}
   <h2 style="font-size:16px; margin-bottom:10px;">{{ section.name }}</h2>
   <div class="card" style="overflow-x:auto; margin-bottom:24px;">
-    <table>
+    <table class="metrics-table">
+      <colgroup>
+        <col style="width:38%;"><col style="width:24%;"><col style="width:19%;"><col style="width:19%;">
+      </colgroup>
       <thead>
         <tr>
           <th>Metric</th>
-          <th>Actuals -- Lifetime (Placeholder)</th>
+          <th>Actuals -- Lifetime<br>(Placeholder)</th>
           <th>Target</th>
           <th>Variance</th>
         </tr>
@@ -35,4 +38,9 @@
     </table>
   </div>
 {% endfor %}
+
+<style>
+  .metrics-table { table-layout:fixed; max-width:640px; margin:0 auto; }
+  .metrics-table th, .metrics-table td { text-align:center; }
+</style>
 {% endblock %}
