@@ -1,0 +1,13 @@
+{% extends "public_shell.html" %}
+{% block title %}Thank you -- Summit Doodles{% endblock %}
+{% block pubcontent %}
+<div class="card card-pad" style="text-align:center; padding:48px 24px;">
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00AB8E" stroke-width="1.8" style="margin:0 auto;"><circle cx="12" cy="12" r="10"/><path d="M8 12 L11 15 L16 9"/></svg>
+  <h1 style="font-size:22px; margin-top:16px;">Visit requested!</h1>
+  <p style="color:var(--muted); font-size:14px; margin-top:8px; max-width:44ch; margin-left:auto; margin-right:auto; line-height:1.6;">
+    Tom &amp; Tara will confirm your requested day and time as soon as they can -- remember, the date and time you
+    picked are subject to owner availability.
+  </p>
+  <a class="btn btn-secondary" style="margin-top:20px;" href="{{ url_for('schedule_index') }}">Schedule another visit</a>
+</div>
+{% endblock %}

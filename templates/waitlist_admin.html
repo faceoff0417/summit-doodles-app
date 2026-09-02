@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %}
+{% block title %}Puppy Waitlist -- Summit Doodles{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h1>Puppy Waitlist</h1><div class="sub">By puppy, in the order people joined -- first come, first served.</div></div>
+</div>
+
+<div class="stack">
+  {% for g in groups %}
+    <div class="card card-pad">
+      <div class="row-between" style="margin-bottom:10px;">
+        <div style="font-weight:800; font-size:15px;">{{ g.puppy['name'] }} <span style="font-weight:500; color:var(--muted); font-size:12.5px;">&middot; {{ g.puppy['litter_name'] }}</span></div>
+        <span class="pill {{ pill_class(g.puppy['status']) }}">{{ g.puppy['status'] }}</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:0;">
+        {% for e in g.entries %}
+          <div style="display:flex; align-items:center; gap:12px; padding:10px 0; {{ 'border-top:1px solid var(--line);' if not loop.first }}">
+            <div class="avatar" style="width:30px; height:30px; font-size:12px; background:var(--purple); flex-shrink:0;">{{ loop.index }}</div>
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:13px;">{{ e['name'] }}</div>
+              <div style="font-size:11.5px; color:var(--muted);">{{ e['email'] }}{% if e['phone'] %} &middot; {{ e['phone'] }}{% endif %} &middot; joined {{ e['created_at'][:10] }}</div>
+              {% if e['notes'] %}<div class="hint" style="margin-top:2px;">&ldquo;{{ e['notes'] }}&rdquo;</div>{% endif %}
+            </div>
+            {% if e['application_id'] %}
+              <a class="btn btn-secondary btn-sm" href="{{ url_for('application_detail', app_id=e['application_id']) }}">View application</a>
+            {% endif %}
+            <form method="post" action="{{ url_for('waitlist_entry_delete', entry_id=e['id']) }}" onsubmit="return confirm('Remove this person from the waitlist?');">
+              <button class="btn btn-secondary btn-sm" type="submit">Remove</button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="card card-pad" style="color:var(--muted);">No one's on a waitlist right now.</div>
+  {% endfor %}
+</div>
+{% endblock %}

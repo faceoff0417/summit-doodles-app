@@ -1,0 +1,50 @@
+{% extends "public_shell.html" %}
+{% block title %}Schedule a Visit -- Summit Doodles{% endblock %}
+{% block pubcontent %}
+<div class="page-head" style="display:block;">
+  <h1 style="font-size:26px;">Schedule a Visit</h1>
+  <div class="sub">Pick a puppy below to request a day and time to come meet them -- dates and times selected are subject to owner availability. If a puppy isn't available, join the waitlist and we'll reach out the moment that changes.</div>
+</div>
+
+{% for l in litters %}
+  <div class="card" style="margin-bottom:20px; overflow:hidden;">
+    <div style="padding:16px 20px; background:linear-gradient(120deg,var(--blue-deep),var(--blue-accent)); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div>
+        <span class="pill" style="background:rgba(255,255,255,0.22); color:#fff;">{{ l['status'] }}</span>
+        <div style="font-family:'Playfair Display',serif; font-weight:700; font-size:19px; margin-top:8px;">{{ l['litter_name'] }}</div>
+        <div style="font-size:12.5px; color:rgba(255,255,255,0.85); margin-top:2px;">
+          {{ l['breed'] }}{% if l['dob'] %} &middot; Born {{ l['dob'] | dateread }}{% endif %}
+        </div>
+      </div>
+      <a class="btn btn-sm" href="{{ url_for('schedule_litter', litter_id=l['id']) }}" style="background:#fff; color:var(--blue-deep); flex-shrink:0;">Meet this litter</a>
+    </div>
+    <div class="card-pad">
+      {% set pups = litter_puppies[l['id']] %}
+      {% if pups %}
+        <div class="grid-3">
+          {% for p in pups %}
+            <div class="card card-pad">
+              <div class="puppy-thumb" style="margin-bottom:10px;">
+                {% if p['photo_filename'] %}<img class="zoomable" src="{{ url_for('uploaded_file', filename=p['photo_filename']) }}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">{% endif %}
+              </div>
+              <div style="font-weight:800; font-size:13.5px;">{{ p['name'] }}</div>
+              <div class="hint">{{ p['sex'] }} &middot; {{ p['color'] }}</div>
+              <span class="pill {{ pill_class(p['status']) }}" style="margin-top:8px;">{{ p['status'] }}</span>
+              <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+                <a class="btn btn-secondary btn-sm" href="{{ url_for('schedule_puppy', puppy_id=p['id']) }}">Meet the Puppy</a>
+                {% if p['status'] != 'Available' %}
+                  <a class="btn btn-secondary btn-sm" href="{{ url_for('apply', puppy_id=p['id'], waitlist=1) }}">Join the Waitlist</a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:var(--muted); font-size:13px;">No puppies entered for this litter yet.</p>
+      {% endif %}
+    </div>
+  </div>
+{% else %}
+  <div class="card card-pad" style="color:var(--muted); text-align:center;">No litters posted right now -- check back soon.</div>
+{% endfor %}
+{% endblock %}

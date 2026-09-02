@@ -1,0 +1,44 @@
+{% extends "public_shell.html" %}
+{% block title %}{{ 'Meet ' ~ puppy['name'] if puppy else 'Meet ' ~ litter['litter_name'] }} -- Summit Doodles{% endblock %}
+{% block pubcontent %}
+<div class="page-head" style="display:block;">
+  <h1 style="font-size:26px;">{{ 'Meet ' ~ puppy['name'] if puppy else 'Meet the ' ~ litter['litter_name'] ~ ' Litter' }}</h1>
+  <div class="sub">
+    {% if puppy %}{{ puppy['sex'] }} &middot; {{ puppy['color'] }} &middot; {{ puppy['litter_name'] }}{% else %}{{ litter['breed'] }}{% endif %}
+  </div>
+</div>
+
+{% if puppy %}
+<div class="card" style="display:flex; gap:14px; align-items:center; margin-bottom:20px; padding:16px;">
+  <div class="puppy-thumb" style="width:64px; height:64px; flex-shrink:0;">
+    {% if puppy['photo_filename'] %}<img class="zoomable" src="{{ url_for('uploaded_file', filename=puppy['photo_filename']) }}" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">{% endif %}
+  </div>
+  <div>
+    <div style="font-weight:800; font-size:14px;">{{ puppy['name'] }}</div>
+    <span class="pill {{ pill_class(puppy['status']) }}" style="margin-top:4px;">{{ puppy['status'] }}</span>
+  </div>
+</div>
+{% endif %}
+
+<form method="post" class="card card-pad">
+  <div class="field-row">
+    <div class="field"><label>Your name</label><input type="text" name="name" required></div>
+    <div class="field"><label>Email</label><input type="email" name="email" required></div>
+  </div>
+  <div class="field"><label>Phone <span style="font-weight:400;">(optional)</span></label><input type="tel" name="phone"></div>
+  <div class="field-row">
+    <div class="field"><label>Preferred date</label><input type="date" name="requested_date" min="{{ today }}" required></div>
+    <div class="field"><label>Preferred time</label><input type="time" name="requested_time" required></div>
+  </div>
+  <div class="field"><label>Anything you'd like us to know? <span style="font-weight:400;">(optional)</span></label><textarea name="notes"></textarea></div>
+
+  <div class="card card-pad" style="background:var(--purple-tint); border:none; margin-bottom:16px;">
+    <p style="font-size:12.5px; color:var(--ink); line-height:1.6;">
+      <strong>Please note:</strong> the date and time you select are a request, subject to owner availability.
+      We'll follow up by email or phone to confirm your visit.
+    </p>
+  </div>
+
+  <button class="btn btn-primary btn-block" type="submit">Request this visit</button>
+</form>
+{% endblock %}

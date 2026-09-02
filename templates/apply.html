@@ -6,7 +6,18 @@
   <div class="sub">Tell us about your family and we'll be in touch. A small deposit reserves your spot once you're approved -- nothing is charged by filling this out.</div>
 </div>
 
+{% if waitlist_puppy_label %}
+<div class="card card-pad" style="background:var(--purple-tint); border:none; margin-bottom:16px;">
+  <p style="font-size:13px; color:var(--ink); line-height:1.6;">
+    <strong>Joining the waitlist for {{ waitlist_puppy_label }}.</strong> Submit this application and we'll add
+    you to their waitlist, in the order applications come in -- first come, first served. We'll reach out right
+    away if they become available.
+  </p>
+</div>
+{% endif %}
+
 <form method="post" class="card card-pad">
+  {% if waitlist_puppy_id %}<input type="hidden" name="waitlist_puppy_id" value="{{ waitlist_puppy_id }}">{% endif %}
   <fieldset>
     <legend>Contact information</legend>
     <div class="field-row">
@@ -74,7 +85,7 @@
       <label>Puppy choice #1</label>
       <select name="puppy_choice_1">
         <option value="">No preference / a future litter</option>
-        {% for c in puppy_choices %}<option>{{ c }}</option>{% endfor %}
+        {% for c in puppy_choices %}<option {{ 'selected' if c == preselect_choice }}>{{ c }}</option>{% endfor %}
       </select>
     </div>
     <div class="field-row">

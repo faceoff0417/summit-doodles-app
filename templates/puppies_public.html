@@ -28,6 +28,15 @@
               <div class="hint">{{ p['sex'] }} &middot; {{ p['color'] }}</div>
               {% if p['price'] %}<div style="font-size:13px; font-weight:700; color:var(--blue-deep); margin-top:4px;">{{ p['price'] | money }}</div>{% endif %}
               <span class="pill {{ pill_class(p['status']) }}" style="margin-top:8px;">{{ p['status'] }}</span>
+              <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px;">
+                {% if p['status'] == 'Available' %}
+                  <a class="btn btn-primary btn-sm" href="{{ url_for('apply', puppy_id=p['id']) }}">Reserve</a>
+                {% endif %}
+                <a class="btn btn-secondary btn-sm" href="{{ url_for('schedule_puppy', puppy_id=p['id']) }}">Meet the Puppy</a>
+                {% if p['status'] != 'Available' %}
+                  <a class="btn btn-secondary btn-sm" href="{{ url_for('apply', puppy_id=p['id'], waitlist=1) }}">Join the Waitlist</a>
+                {% endif %}
+              </div>
             </div>
           {% endfor %}
         </div>

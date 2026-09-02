@@ -69,16 +69,19 @@ def open_counts():
     contact_count = conn.execute(
         "SELECT COUNT(*) c FROM contacts WHERE status = 'New'"
     ).fetchone()["c"]
+    meeting_count = conn.execute(
+        "SELECT COUNT(*) c FROM meeting_requests WHERE status = 'Requested'"
+    ).fetchone()["c"]
     conn.close()
-    return app_count, contact_count
+    return app_count, contact_count, meeting_count
 
 
 @app.context_processor
 def inject_counts():
     if session.get("is_admin"):
-        a, c = open_counts()
-        return dict(open_application_count=a, open_contact_count=c)
-    return dict(open_application_count=0, open_contact_count=0)
+        a, c, m = open_counts()
+        return dict(open_application_count=a, open_contact_count=c, open_meeting_count=m)
+    return dict(open_application_count=0, open_contact_count=0, open_meeting_count=0)
 
 
 def get_setting(key, default=None):
@@ -171,6 +174,7 @@ PILL_MAP = {
     "Declined": "pill-red", "Replied": "pill-blue", "Closed": "pill-gray",
     "Planned": "pill-gray", "Expecting": "pill-purple", "Whelped": "pill-blue", "Reserving": "pill-green",
     "Complete": "pill-gray",
+    "Requested": "pill-amber", "Confirmed": "pill-green", "Completed": "pill-gray",
 }
 app.jinja_env.globals["pill_class"] = lambda status: PILL_MAP.get(status, "pill-gray")
 
@@ -1035,7 +1039,7 @@ def apply():
     conn = get_db()
     if request.method == "POST":
         f = request.form
-        conn.execute("""
+        cur = conn.execute("""
             INSERT INTO applications (first_name, last_name, address_line1, address_line2, city,
                 state, zip, how_heard, phone, email, preferred_contact, referral_source, timeframe,
                 current_dogs, puppy_choice_1, puppy_choice_2, puppy_choice_3, notify_future_litters,
@@ -1050,24 +1054,125 @@ def apply():
               f.get("gender_preference"), f.get("delivery_pref"), f.get("training_interest"),
               f.get("training_package"), 1 if f.get("contract_agree") else 0,
               f.get("signature_text"), f.get("signature_date"), f.get("comments")))
+        app_id = cur.lastrowid
+        # Arrived via a specific puppy's "Join the Waitlist" link -- the
+        # application is also an entry on that puppy's waitlist, in the
+        # order applications come in (first come, first served).
+        waitlist_puppy_id = f.get("waitlist_puppy_id")
+        if waitlist_puppy_id:
+            conn.execute("""
+                INSERT INTO puppy_waitlist (puppy_id, name, email, phone, notes, application_id)
+                VALUES (?,?,?,?,?,?)
+            """, (waitlist_puppy_id, f"{f['first_name']} {f['last_name']}", f["email"], f.get("phone"),
+                  f.get("comments"), app_id))
         conn.commit()
         conn.close()
         return redirect(url_for("apply_thanks"))
+
     puppy_rows = conn.execute("""
-        SELECT p.id, p.name, p.sex, p.color, l.litter_name
+        SELECT p.id, p.name, p.sex, p.color, p.status, l.litter_name
         FROM puppies p JOIN litters l ON l.id = p.litter_id
         WHERE p.status IN ('Available','On Hold') ORDER BY l.dob, p.name
     """).fetchall()
-    conn.close()
     puppy_choices = [PUPPY_CHOICE_LABEL.format(litter=r["litter_name"], name=r["name"],
                                                 sex=r["sex"], color=r["color"]) for r in puppy_rows]
+
+    # Arrived from a specific puppy's Reserve / Join Waitlist link -- pre-pick
+    # that puppy. It may not be in puppy_choices above (e.g. a Sold puppy
+    # someone wants to waitlist for), so add it as its own option if needed.
+    preselect_id = request.args.get("puppy_id", type=int)
+    preselect_choice, waitlist_puppy_id, waitlist_puppy_label = None, None, None
+    if preselect_id:
+        p = conn.execute("""
+            SELECT p.id, p.name, p.sex, p.color, p.status, l.litter_name
+            FROM puppies p JOIN litters l ON l.id = p.litter_id WHERE p.id=?
+        """, (preselect_id,)).fetchone()
+        if p:
+            preselect_choice = PUPPY_CHOICE_LABEL.format(litter=p["litter_name"], name=p["name"],
+                                                           sex=p["sex"], color=p["color"])
+            if preselect_choice not in puppy_choices:
+                puppy_choices.insert(0, preselect_choice)
+            if request.args.get("waitlist"):
+                waitlist_puppy_id = p["id"]
+                waitlist_puppy_label = f"{p['name']} ({p['litter_name']})"
+    conn.close()
     return render_template("apply.html", puppy_choices=puppy_choices, today=datetime.date.today().isoformat(),
-                            pub_active="apply")
+                            pub_active="apply", preselect_choice=preselect_choice,
+                            waitlist_puppy_id=waitlist_puppy_id, waitlist_puppy_label=waitlist_puppy_label)
 
 
 @app.route("/apply/thanks")
 def apply_thanks():
     return render_template("apply_thanks.html", pub_active="apply")
+
+
+# ------------------------------------------------------- schedule a meeting --
+@app.route("/schedule")
+def schedule_index():
+    conn = get_db()
+    litters = conn.execute("""
+        SELECT DISTINCT l.* FROM litters l JOIN puppies p ON p.litter_id = l.id
+        ORDER BY l.dob IS NULL, l.dob DESC
+    """).fetchall()
+    litter_puppies = {}
+    for l in litters:
+        litter_puppies[l["id"]] = conn.execute(
+            "SELECT * FROM puppies WHERE litter_id=? ORDER BY (status != 'Available'), name", (l["id"],)
+        ).fetchall()
+    conn.close()
+    return render_template("schedule_index.html", litters=litters, litter_puppies=litter_puppies,
+                            pub_active="schedule")
+
+
+@app.route("/schedule/puppy/<int:puppy_id>", methods=["GET", "POST"])
+def schedule_puppy(puppy_id):
+    conn = get_db()
+    p = conn.execute("""
+        SELECT p.*, l.litter_name FROM puppies p JOIN litters l ON l.id = p.litter_id WHERE p.id = ?
+    """, (puppy_id,)).fetchone()
+    if not p:
+        conn.close()
+        abort(404)
+    if request.method == "POST":
+        f = request.form
+        conn.execute("""
+            INSERT INTO meeting_requests (puppy_id, name, email, phone, requested_date, requested_time, notes)
+            VALUES (?,?,?,?,?,?,?)
+        """, (puppy_id, f["name"], f["email"], f.get("phone"), f["requested_date"], f["requested_time"],
+              f.get("notes")))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("schedule_thanks"))
+    conn.close()
+    return render_template("schedule_form.html", pub_active="schedule", puppy=p, litter=None,
+                            today=datetime.date.today().isoformat())
+
+
+@app.route("/schedule/litter/<int:litter_id>", methods=["GET", "POST"])
+def schedule_litter(litter_id):
+    conn = get_db()
+    l = conn.execute("SELECT * FROM litters WHERE id = ?", (litter_id,)).fetchone()
+    if not l:
+        conn.close()
+        abort(404)
+    if request.method == "POST":
+        f = request.form
+        conn.execute("""
+            INSERT INTO meeting_requests (litter_id, name, email, phone, requested_date, requested_time, notes)
+            VALUES (?,?,?,?,?,?,?)
+        """, (litter_id, f["name"], f["email"], f.get("phone"), f["requested_date"], f["requested_time"],
+              f.get("notes")))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("schedule_thanks"))
+    conn.close()
+    return render_template("schedule_form.html", pub_active="schedule", puppy=None, litter=l,
+                            today=datetime.date.today().isoformat())
+
+
+@app.route("/schedule/thanks")
+def schedule_thanks():
+    return render_template("schedule_thanks.html", pub_active="schedule")
 
 
 @app.route("/applications")
@@ -1101,6 +1206,76 @@ def application_detail(app_id):
     if not row:
         abort(404)
     return render_template("application_detail.html", nav_active="applications", a=row, notes=notes)
+
+
+# -------------------------------------------------------- meeting requests --
+@app.route("/meeting-requests")
+@login_required
+def meeting_requests_list():
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT m.*, p.name as puppy_name, COALESCE(pl.litter_name, ll.litter_name) as litter_name
+        FROM meeting_requests m
+        LEFT JOIN puppies p ON p.id = m.puppy_id
+        LEFT JOIN litters pl ON pl.id = p.litter_id
+        LEFT JOIN litters ll ON ll.id = m.litter_id
+        ORDER BY m.status='Requested' DESC, m.requested_date, m.requested_time
+    """).fetchall()
+    conn.close()
+    return render_template("meeting_requests_list.html", nav_active="meeting_requests", requests=rows)
+
+
+@app.route("/meeting-requests/<int:req_id>/update", methods=["POST"])
+@login_required
+def meeting_request_update(req_id):
+    conn = get_db()
+    conn.execute("UPDATE meeting_requests SET status=? WHERE id=?", (request.form["status"], req_id))
+    conn.commit()
+    conn.close()
+    flash("Meeting request updated.", "success")
+    return redirect(url_for("meeting_requests_list"))
+
+
+@app.route("/meeting-requests/<int:req_id>/delete", methods=["POST"])
+@login_required
+def meeting_request_delete(req_id):
+    conn = get_db()
+    conn.execute("DELETE FROM meeting_requests WHERE id=?", (req_id,))
+    conn.commit()
+    conn.close()
+    flash("Meeting request removed.", "info")
+    return redirect(url_for("meeting_requests_list"))
+
+
+# --------------------------------------------------------------- waitlist --
+@app.route("/waitlist")
+@login_required
+def waitlist_admin():
+    conn = get_db()
+    puppies = conn.execute("""
+        SELECT DISTINCT p.id, p.name, p.status, l.litter_name
+        FROM puppy_waitlist w JOIN puppies p ON p.id = w.puppy_id JOIN litters l ON l.id = p.litter_id
+        ORDER BY l.dob IS NULL, l.dob DESC, p.name
+    """).fetchall()
+    groups = []
+    for p in puppies:
+        entries = conn.execute(
+            "SELECT * FROM puppy_waitlist WHERE puppy_id=? ORDER BY created_at", (p["id"],)
+        ).fetchall()
+        groups.append(dict(puppy=p, entries=entries))
+    conn.close()
+    return render_template("waitlist_admin.html", nav_active="waitlist", groups=groups)
+
+
+@app.route("/waitlist/<int:entry_id>/delete", methods=["POST"])
+@login_required
+def waitlist_entry_delete(entry_id):
+    conn = get_db()
+    conn.execute("DELETE FROM puppy_waitlist WHERE id=?", (entry_id,))
+    conn.commit()
+    conn.close()
+    flash("Removed from waitlist.", "info")
+    return redirect(url_for("waitlist_admin"))
 
 
 # ------------------------------------------------------------------ contact --

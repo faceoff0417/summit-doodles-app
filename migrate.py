@@ -88,6 +88,30 @@ NEW_TABLES_SQL = [
         key             TEXT PRIMARY KEY,
         value           TEXT
     )""",
+    """CREATE TABLE IF NOT EXISTS meeting_requests (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        puppy_id        INTEGER REFERENCES puppies(id) ON DELETE CASCADE,
+        litter_id       INTEGER REFERENCES litters(id) ON DELETE CASCADE,
+        name            TEXT NOT NULL,
+        email           TEXT NOT NULL,
+        phone           TEXT,
+        requested_date  TEXT NOT NULL,
+        requested_time  TEXT NOT NULL,
+        notes           TEXT,
+        status          TEXT NOT NULL DEFAULT 'Requested' CHECK (status IN ('Requested','Confirmed','Declined','Completed')),
+        created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+        CHECK ((puppy_id IS NOT NULL) OR (litter_id IS NOT NULL))
+    )""",
+    """CREATE TABLE IF NOT EXISTS puppy_waitlist (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        puppy_id        INTEGER NOT NULL REFERENCES puppies(id) ON DELETE CASCADE,
+        name            TEXT NOT NULL,
+        email           TEXT NOT NULL,
+        phone           TEXT,
+        notes           TEXT,
+        application_id  INTEGER REFERENCES applications(id) ON DELETE SET NULL,
+        created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+    )""",
 ]
 
 NEW_COLUMNS = [

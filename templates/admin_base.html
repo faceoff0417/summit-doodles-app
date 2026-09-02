@@ -42,6 +42,15 @@
       Applications
       {% if open_application_count %}<span class="count">{{ open_application_count }}</span>{% endif %}
     </a>
+    <a class="navitem {% if nav_active=='meeting_requests' %}active{% endif %}" href="{{ url_for('meeting_requests_list') }}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9 H21 M8 3 V7 M16 3 V7"/><path d="M8 14 L11 17 L16 12"/></svg>
+      Meeting Requests
+      {% if open_meeting_count %}<span class="count">{{ open_meeting_count }}</span>{% endif %}
+    </a>
+    <a class="navitem {% if nav_active=='waitlist' %}active{% endif %}" href="{{ url_for('waitlist_admin') }}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6 H20 M4 12 H20 M4 18 H14"/></svg>
+      Puppy Waitlist
+    </a>
     <a class="navitem {% if nav_active=='matching' %}active{% endif %}" href="{{ url_for('matching') }}">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M4 12 C4 12 7 6 12 6 C17 6 20 12 20 12 C20 12 17 18 12 18 C7 18 4 12 4 12 Z"/></svg>
       Matching
