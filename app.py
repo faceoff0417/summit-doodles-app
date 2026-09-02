@@ -102,6 +102,17 @@ def set_setting(key, value):
     conn.close()
 
 
+def get_payment_methods():
+    """Manual, no-card payment options (Venmo/Zelle/Cash App) -- set once by
+    the breeder in /settings/payments, shown wherever a customer owes money.
+    Card/debit payment is intentionally not supported here."""
+    return dict(
+        venmo=get_setting("pay_venmo"),
+        zelle=get_setting("pay_zelle"),
+        cashapp=get_setting("pay_cashapp"),
+    )
+
+
 def guardian_lifetime_count():
     # Manual baseline (older placements this app never tracked) + every dog
     # that has actually transitioned into the Guardian Program since --
@@ -222,6 +233,19 @@ def about_edit():
         return redirect(url_for("about_edit"))
     about_photo = get_setting("about_photo")
     return render_template("about_edit.html", nav_active="about", about_photo=about_photo)
+
+
+@app.route("/settings/payments", methods=["GET", "POST"])
+@login_required
+def payment_settings_edit():
+    if request.method == "POST":
+        set_setting("pay_venmo", request.form.get("venmo", "").strip())
+        set_setting("pay_zelle", request.form.get("zelle", "").strip())
+        set_setting("pay_cashapp", request.form.get("cashapp", "").strip())
+        flash("Payment methods updated.", "success")
+        return redirect(url_for("payment_settings_edit"))
+    return render_template("payment_settings_edit.html", nav_active="payment_settings",
+                            methods=get_payment_methods())
 
 
 # --------------------------------------------------------------- dashboard --
@@ -999,7 +1023,7 @@ def guardian_public():
 # --------------------------------------------------------- pricing & training --
 @app.route("/pricing-training")
 def pricing_public():
-    return render_template("pricing.html", pub_active="pricing")
+    return render_template("pricing.html", pub_active="pricing", payment_methods=get_payment_methods())
 
 
 # --------------------------------------------------------- public puppy listings --
@@ -1642,7 +1666,7 @@ def portal(token):
     text_updates = [u for u in updates if not u["photo_filename"]]
     return render_template("portal.html", r=r, updates=updates, photo_updates=photo_updates,
                             text_updates=text_updates, messages=messages, days_left=days_left,
-                            token=token, lifetime=lifetime)
+                            token=token, lifetime=lifetime, payment_methods=get_payment_methods())
 
 
 @app.route("/portal/<token>/updates/<int:update_id>/delete", methods=["POST"])

@@ -78,6 +78,31 @@
   <div style="height:7px; border-radius:4px; background:#F1F0F4; margin-top:14px; overflow:hidden;">
     <div style="width:{{ ((r['deposit_paid'] / r['total_price'] * 100) if r['total_price'] else 0) | round(0) }}%; height:100%; background:var(--purple);"></div>
   </div>
+
+  {% if r['balance_due'] and r['balance_due'] > 0 and (payment_methods.venmo or payment_methods.zelle or payment_methods.cashapp) %}
+    <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--line);">
+      <div class="eyebrow" style="margin-bottom:8px;">Pay your balance</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        {% if payment_methods.venmo %}
+          <a class="btn btn-secondary btn-sm btn-block" href="https://venmo.com/u/{{ payment_methods.venmo }}" target="_blank" rel="noopener">
+            Venmo &middot; @{{ payment_methods.venmo }}
+          </a>
+        {% endif %}
+        {% if payment_methods.cashapp %}
+          <a class="btn btn-secondary btn-sm btn-block" href="https://cash.app/${{ payment_methods.cashapp }}" target="_blank" rel="noopener">
+            Cash App &middot; ${{ payment_methods.cashapp }}
+          </a>
+        {% endif %}
+        {% if payment_methods.zelle %}
+          <div class="card card-pad" style="padding:10px 14px;">
+            <div style="font-size:12.5px; font-weight:700;">Zelle</div>
+            <div style="font-size:12.5px; color:var(--muted); margin-top:2px;">Send to {{ payment_methods.zelle }} in your banking app</div>
+          </div>
+        {% endif %}
+      </div>
+      <p class="hint" style="margin-top:8px;">No credit or debit cards, please -- Venmo, Zelle, and Cash App only.</p>
+    </div>
+  {% endif %}
 </div>
 
 <h2 style="font-size:16px; margin-bottom:10px;">Documents</h2>

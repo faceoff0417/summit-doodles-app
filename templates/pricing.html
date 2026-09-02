@@ -62,6 +62,19 @@
   </ul>
 </div>
 
+{% if payment_methods and (payment_methods.venmo or payment_methods.zelle or payment_methods.cashapp) %}
+<h2 style="font-size:18px; margin-bottom:12px;">Ways to Pay</h2>
+<div class="card card-pad" style="margin-bottom:24px;">
+  <p style="font-size:13px; color:var(--ink); margin-bottom:10px;">We accept:</p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    {% if payment_methods.venmo %}<span class="pill pill-purple">Venmo</span>{% endif %}
+    {% if payment_methods.zelle %}<span class="pill pill-purple">Zelle</span>{% endif %}
+    {% if payment_methods.cashapp %}<span class="pill pill-purple">Cash App</span>{% endif %}
+  </div>
+  <p class="hint" style="margin-top:10px;">No credit or debit cards -- your specific payment links are on your puppy's portal once you've reserved.</p>
+</div>
+{% endif %}
+
 <h2 style="font-size:18px; margin-bottom:12px;">Travel Packages</h2>
 <div class="grid-2" style="margin-bottom:24px;">
   <div class="card card-pad">
