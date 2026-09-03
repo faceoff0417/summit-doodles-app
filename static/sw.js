@@ -8,7 +8,7 @@
 // IMPORTANT: whenever style.css, the logo, or an icon changes, bump this
 // version string -- otherwise installed apps keep serving the old cached
 // file indefinitely, even after a fresh deploy.
-const SHELL_CACHE = "summit-doodles-shell-v6";
+const SHELL_CACHE = "summit-doodles-shell-v7";
 const SHELL_ASSETS = [
   "/static/css/style.css",
   "/static/img/logo-full.png",

@@ -95,8 +95,8 @@ tr:hover td { background:#FBFAFD; }
 .sidebar::-webkit-scrollbar-thumb { background:var(--line); border-radius:6px; }
 .sidebar::-webkit-scrollbar-track { background:transparent; }
 .brand { display:flex; align-items:center; gap:10px; padding:6px 8px 22px; }
-.brand img { width:36px; height:auto; }
-.brand-name { font-family:'Playfair Display',serif; font-weight:700; font-size:15px; color:var(--ink); }
+.brand img { width:48px; height:auto; }
+.brand-name { font-family:'Playfair Display',serif; font-weight:700; font-size:15px; color:var(--ink); line-height:1.2; }
 .navitem {
   display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
   font-size:13.5px; font-weight:700; color:var(--muted); margin-bottom:2px;
@@ -174,9 +174,9 @@ tr:hover td { background:#FBFAFD; }
 @media (max-width: 880px) {
   .shell { flex-direction:column; }
   .sidebar { width:100%; height:auto; position:relative; flex-direction:row; overflow-x:auto; padding:12px; align-items:center; }
-  .brand { flex-direction:column; gap:2px; padding:4px 10px; flex-shrink:0; }
-  .brand img { width:26px; }
-  .brand-name { font-size:11px; white-space:nowrap; }
+  .brand { flex-direction:column; gap:4px; padding:4px 10px; flex-shrink:0; }
+  .brand img { width:38px; }
+  .brand-name { font-size:11px; text-align:center; line-height:1.15; }
   .sidebar-spacer { display:none; }
   .navitem { flex-direction:column; gap:4px; padding:8px 12px; font-size:11px; }
   .main { padding:20px; }
