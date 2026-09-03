@@ -190,11 +190,16 @@ tr:hover td { background:#FBFAFD; }
   .nav-chevron-btn { width:auto; height:auto; padding:0 4px; }
   .nav-toggle-btn { width:auto; flex-direction:column; gap:4px; padding:8px 12px; font-size:11px; white-space:nowrap; }
   .nav-toggle-btn .chevron { margin-left:0 !important; }
+  /* position:fixed (not absolute) -- .sidebar has overflow-x:auto, which per
+     the CSS overflow spec forces its overflow-y to computed 'auto' too, so
+     an absolutely-positioned dropdown gets silently clipped to the bar's own
+     box instead of floating over the page below it. Fixed positioning
+     escapes that; JS sets top/left to the toggle button's location. */
   .navsub {
-    display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-    z-index:60; flex-direction:column; width:max-content; max-width:78vw;
+    display:none; position:fixed; top:0; left:0;
+    z-index:1000; flex-direction:column; width:max-content; max-width:78vw;
     background:var(--sidebar-bg); border:1px solid var(--line); border-radius:12px;
-    box-shadow:var(--shadow-lg); padding:8px; margin:8px 0 0;
+    box-shadow:var(--shadow-lg); padding:8px;
   }
   .navgroup.open .navsub { display:flex; }
   .navsub .navitem { flex-direction:row; gap:10px; padding:9px 12px; font-size:12.5px; }

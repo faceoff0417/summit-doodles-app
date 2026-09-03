@@ -64,6 +64,21 @@
       g.classList.remove('open');
     });
   }
+  // The dropdown is position:fixed (see CSS comment for why), so its
+  // top/left have to be set in JS from the toggle button's own location.
+  function positionMobileDropdown(group, btn) {
+    var sub = group.querySelector('.navsub');
+    if (!sub) return;
+    var rect = btn.getBoundingClientRect();
+    sub.style.top = (rect.bottom + 8) + 'px';
+    var left = Math.max(8, Math.min(rect.left, window.innerWidth - sub.offsetWidth - 8));
+    sub.style.left = left + 'px';
+  }
+  function closeAllMobileGroups() {
+    document.querySelectorAll('.navgroup.open').forEach(function (g) {
+      g.classList.remove('open');
+    });
+  }
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('.nav-toggle-btn, .nav-chevron-btn');
     if (btn) {
@@ -77,14 +92,18 @@
         });
       }
       group.classList.toggle('open', !wasOpen);
+      if (isMobileNav && !wasOpen) positionMobileDropdown(group, btn);
       return;
     }
     if (isMobileNav && !e.target.closest('.navgroup')) {
-      document.querySelectorAll('.navgroup.open').forEach(function (g) {
-        g.classList.remove('open');
-      });
+      closeAllMobileGroups();
     }
   });
+  if (isMobileNav) {
+    // A fixed-position dropdown doesn't track the button if the page
+    // scrolls out from under it -- just close it instead of drifting.
+    window.addEventListener('scroll', closeAllMobileGroups, { passive: true });
+  }
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
