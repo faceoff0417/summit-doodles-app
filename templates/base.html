@@ -50,13 +50,40 @@
   // Collapsible sidebar nav groups (public sidebar): clicking a group's
   // toggle button expands/collapses its sub-links. Server already renders
   // the group open when the current page is inside it, so this only
-  // handles manual expand/collapse from here on.
+  // handles manual expand/collapse from here on. Desktop: independent
+  // toggles, any number of groups can stay open.
+  //
+  // On the mobile horizontal nav bar, sub-links float as a dropdown rather
+  // than pushing the bar taller (see CSS) -- so there, start every group
+  // closed on load (an auto-open dropdown on page load looks broken),
+  // only one dropdown open at a time, and tapping outside closes it.
+  var MOBILE_NAV_WIDTH = 880;
+  var isMobileNav = window.innerWidth <= MOBILE_NAV_WIDTH;
+  if (isMobileNav) {
+    document.querySelectorAll('.navgroup.open').forEach(function (g) {
+      g.classList.remove('open');
+    });
+  }
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('.nav-toggle-btn, .nav-chevron-btn');
-    if (!btn) return;
-    e.preventDefault();
-    var group = btn.closest('.navgroup');
-    if (group) group.classList.toggle('open');
+    if (btn) {
+      e.preventDefault();
+      var group = btn.closest('.navgroup');
+      if (!group) return;
+      var wasOpen = group.classList.contains('open');
+      if (isMobileNav) {
+        document.querySelectorAll('.navgroup.open').forEach(function (g) {
+          if (g !== group) g.classList.remove('open');
+        });
+      }
+      group.classList.toggle('open', !wasOpen);
+      return;
+    }
+    if (isMobileNav && !e.target.closest('.navgroup')) {
+      document.querySelectorAll('.navgroup.open').forEach(function (g) {
+        g.classList.remove('open');
+      });
+    }
   });
 
   if ('serviceWorker' in navigator) {
