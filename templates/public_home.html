@@ -7,6 +7,10 @@
   <p style="font-size:13.5px; color:rgba(255,255,255,0.85); margin-top:8px; max-width:50ch; line-height:1.6;">Browse our current puppies, see what's coming up, or start an application -- everything's right here in the sidebar.</p>
 </div>
 
+<div class="card" style="overflow:hidden; margin-bottom:24px;">
+  <img class="zoomable" src="{{ url_for('static', filename='img/home/puppy-hero.jpg') }}" alt="Summit Doodles puppy" style="width:100%; max-height:420px; object-fit:cover; display:block;">
+</div>
+
 <div class="grid-2" style="margin-bottom:14px;">
   <a class="card card-pad" href="{{ url_for('about_public') }}" style="display:block;">
     <div class="eyebrow">Meet the family</div>
