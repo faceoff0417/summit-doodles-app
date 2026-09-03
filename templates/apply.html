@@ -16,6 +16,27 @@
 </div>
 {% endif %}
 
+{% if payment_methods and (payment_methods.venmo or payment_methods.zelle or payment_methods.cashapp) %}
+<div class="card card-pad" style="margin-bottom:16px;">
+  <div class="eyebrow" style="margin-bottom:8px;">Ready to reserve?</div>
+  <p style="font-size:13px; color:var(--ink); line-height:1.6; margin-bottom:12px;">
+    Once you're approved, a deposit reserves your spot. We accept Venmo, Zelle, and Cash App -- no credit or
+    debit cards.
+  </p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    {% if payment_methods.venmo %}
+      <a class="btn btn-secondary btn-sm" href="https://venmo.com/u/{{ payment_methods.venmo }}" target="_blank" rel="noopener">Venmo &middot; @{{ payment_methods.venmo }}</a>
+    {% endif %}
+    {% if payment_methods.cashapp %}
+      <a class="btn btn-secondary btn-sm" href="https://cash.app/${{ payment_methods.cashapp }}" target="_blank" rel="noopener">Cash App &middot; ${{ payment_methods.cashapp }}</a>
+    {% endif %}
+    {% if payment_methods.zelle %}
+      <span class="pill pill-gray">Zelle &middot; {{ payment_methods.zelle }}</span>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
 <form method="post" class="card card-pad">
   {% if waitlist_puppy_id %}<input type="hidden" name="waitlist_puppy_id" value="{{ waitlist_puppy_id }}">{% endif %}
   <fieldset>

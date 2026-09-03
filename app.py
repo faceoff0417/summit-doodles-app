@@ -1122,7 +1122,8 @@ def apply():
     conn.close()
     return render_template("apply.html", puppy_choices=puppy_choices, today=datetime.date.today().isoformat(),
                             pub_active="apply", preselect_choice=preselect_choice,
-                            waitlist_puppy_id=waitlist_puppy_id, waitlist_puppy_label=waitlist_puppy_label)
+                            waitlist_puppy_id=waitlist_puppy_id, waitlist_puppy_label=waitlist_puppy_label,
+                            payment_methods=get_payment_methods())
 
 
 @app.route("/apply/thanks")
