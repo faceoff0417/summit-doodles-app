@@ -47,6 +47,18 @@
     if (e.key === 'Escape') closeLightbox();
   });
 
+  // Collapsible sidebar nav groups (public sidebar): clicking a group's
+  // toggle button expands/collapses its sub-links. Server already renders
+  // the group open when the current page is inside it, so this only
+  // handles manual expand/collapse from here on.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.nav-toggle-btn, .nav-chevron-btn');
+    if (!btn) return;
+    e.preventDefault();
+    var group = btn.closest('.navgroup');
+    if (group) group.classList.toggle('open');
+  });
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('/sw.js').catch(function () {});
